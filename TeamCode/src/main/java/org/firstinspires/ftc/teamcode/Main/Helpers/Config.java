@@ -14,6 +14,9 @@ public class Config {
         public static double TRIGGER_THRESHOLD = 0.1;
     }
 
+    /**
+     * Logging codes used in telemetry data logging
+     */
     public static class DataCodes {
         public static String lowPowerMode = "lpm";
     }

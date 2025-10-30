@@ -30,8 +30,8 @@ public class Utils {
      * Generates a random "MOTM" to display on the telemetry feed, just for fun, servos no real purpose
      * @return [String]
      */
-    public static String generateMOTMLine() {
-        //Just for fun! Display a "voice line" on initialization
+    public static String generateMOTM() {
+        //Just for fun! Display a message of the match on initialization
         Random rand = new Random();
         String[] catchphrases = {
                 "Your skills are impressive, Pilot. It is good to have you return.",
@@ -43,7 +43,8 @@ public class Utils {
                 "Alea iacta est: The die is cast.",
                 "Am I not merciful?",
                 "Maybe I was wrong to consider us allies.",
-                "42-42 564."
+                "42-42 564.",
+                "I have a ball"
         };
         return catchphrases[rand.nextInt(catchphrases.length)]; //Grabs from a random position in the list
     }
