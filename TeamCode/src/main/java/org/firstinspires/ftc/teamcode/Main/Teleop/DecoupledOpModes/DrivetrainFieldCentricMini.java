@@ -19,30 +19,32 @@ public class DrivetrainFieldCentricMini extends LinearOpMode {
         DcMotor frontRightMotor = hardwareMap.dcMotor.get("FRM");
         DcMotor backRightMotor = hardwareMap.dcMotor.get("BRM");
 
-        // Reverse the right side motors. This may be wrong for your setup.
-        // If your robot moves backwards when commanded to go forwards,
-        // reverse the left side instead.
-        // See the note about this earlier on this page.
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Retrieve the IMU from the hardware map
         IMU imu = hardwareMap.get(IMU.class, "imu");
         // Adjust the orientation parameters to match your robot
+        //TODO: Adjust parameters
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.FORWARD,
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
                 RevHubOrientationOnRobot.UsbFacingDirection.DOWN));
         // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
         imu.initialize(parameters);
 
+        double y;
+        double x;
+        double rx;
         waitForStart();
 
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-            double x = gamepad1.left_stick_x;
-            double rx = gamepad1.right_stick_x;
+            y = -gamepad1.left_stick_y; //Forward and back
+
+            x = gamepad1.right_stick_x; //Rotation
+
+            rx = gamepad1.left_stick_x; //Mecanum Strafe
 
             // This button choice was made so that it is hard to hit on accident,
             // it can be freely changed based on preference.

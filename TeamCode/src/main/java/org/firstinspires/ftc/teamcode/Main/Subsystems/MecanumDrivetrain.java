@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
+import android.bluetooth.BluetoothClass;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -28,17 +31,42 @@ public class MecanumDrivetrain {
     boolean lowPowerMode;
     Utils.Debounce sqaureDebounce = new Utils.Debounce();
 
+    public double botHeading;
+
     double modulator;
+    public String error;
+    public String runmode;
+    public DcMotor.ZeroPowerBehavior currentZeroPowerBehavior;
 
     IMU imu;
-    public MecanumDrivetrain() {
+    public MecanumDrivetrain(HardwareMap hardwareMap) {
+        /**
+         * Motors setup
+         */
         frontLeftMotor = hardwareMap.dcMotor.get(DeviceRegistry.FRONT_LEFT_MOTOR.str());
         backLeftMotor = hardwareMap.dcMotor.get(DeviceRegistry.BACK_LEFT_MOTOR.str());
         frontRightMotor = hardwareMap.dcMotor.get(DeviceRegistry.FRONT_RIGHT_MOTOR.str());
         backRightMotor = hardwareMap.dcMotor.get(DeviceRegistry.BACK_RIGHT_MOTOR.str());
-        imu = hardwareMap.get(IMU.class, DeviceRegistry.IMU.str()); //FIXME: Untested
 
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        /**
+         * IMU CONFIG
+         */
+        imu = hardwareMap.get(IMU.class, DeviceRegistry.IMU.str());
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        //TODO: Adjust parameters
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                RevHubOrientationOnRobot.UsbFacingDirection.DOWN));
+        //Without this, the REV Hub's orientation is assumed to be logo up / USB forward
+        imu.initialize(parameters);
+
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
@@ -46,6 +74,7 @@ public class MecanumDrivetrain {
         backLeftMotor.setZeroPowerBehavior(zeroPowerBehavior);
         frontRightMotor.setZeroPowerBehavior(zeroPowerBehavior);
         backRightMotor.setZeroPowerBehavior(zeroPowerBehavior);
+        currentZeroPowerBehavior = zeroPowerBehavior;
     }
 
     /**
@@ -55,23 +84,25 @@ public class MecanumDrivetrain {
      * @param gamepad All input from gamepad (1)
      */
     public void processInputRC(Gamepad gamepad){
-
+        runmode = "Robot-Centric";
         if (sqaureDebounce.isPressed(gamepad.square)) {
             lowPowerMode = !lowPowerMode;
         }
 
         modulator = lowPowerMode ? Config.Drivetrain.MIN_DT_SPEED : Config.Drivetrain.MAX_DT_SPEED;
 
-        y = -gamepad.left_stick_y;
-        x = gamepad.left_stick_x * 1.1;
-        rx = gamepad.right_stick_x;
+        y = -gamepad.left_stick_y; //Forward and back
+
+        x = gamepad.right_stick_x; //Rotation
+
+        rx = gamepad.left_stick_x; //Mecanum Strafe
 
         denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
-        frontLeftPower = ((y + x + rx)*modulator);
-        frontRightPower = ((y - x - rx)*modulator);
-        backLeftPower = ((y - x + rx)*modulator);
-        backRightPower = ((y + x - rx)*modulator);
+        frontLeftPower = ((y + x + rx)/denominator)*modulator;
+        frontRightPower = ((y - x - rx)/denominator)*modulator;
+        backLeftPower = ((y - x + rx)/denominator)*modulator;
+        backRightPower = ((y + x - rx)/denominator)*modulator;
 
         frontLeftMotor.setPower(frontLeftPower);
         backLeftMotor.setPower(backLeftPower);
@@ -86,21 +117,25 @@ public class MecanumDrivetrain {
      * @param gamepad All input from gamepad (1)
      */
     public void processInputFC(Gamepad gamepad) {
+
+        runmode = "Field-Centric";
         if (sqaureDebounce.isPressed(gamepad.square)) {
             lowPowerMode = !lowPowerMode;
         }
 
         modulator = lowPowerMode ? Config.Drivetrain.MIN_DT_SPEED : Config.Drivetrain.MAX_DT_SPEED;
 
-        double y = -gamepad.left_stick_y; // Remember, Y stick value is reversed
-        double x = gamepad.left_stick_x;
-        double rx = gamepad.right_stick_x;
+        y = -gamepad.left_stick_y; //Forward and back
+
+        rx = gamepad.left_stick_x; //Mecanum Strafe
+
+        x = gamepad.right_stick_x; //Rotation
 
         if (gamepad.options) {
             imu.resetYaw();
         }
 
-        double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
         //Rotate the movement direction counter to the bot's rotation
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
