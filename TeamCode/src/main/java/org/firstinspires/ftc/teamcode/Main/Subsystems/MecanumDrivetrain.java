@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
-import android.bluetooth.BluetoothClass;
-
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -29,13 +27,13 @@ public class MecanumDrivetrain {
     double frontRightPower;
     double backRightPower;
     boolean lowPowerMode;
-    Utils.Debounce sqaureDebounce = new Utils.Debounce();
+    Utils.Debounce aDebounce = new Utils.Debounce();
 
     public double botHeading;
 
     double modulator;
     public String error;
-    public String runmode;
+    public String runmode = "Null";
     public DcMotor.ZeroPowerBehavior currentZeroPowerBehavior;
 
     IMU imu;
@@ -85,7 +83,7 @@ public class MecanumDrivetrain {
      */
     public void processInputRC(Gamepad gamepad){
         runmode = "Robot-Centric";
-        if (sqaureDebounce.isPressed(gamepad.square)) {
+        if (aDebounce.isPressed(gamepad.a)) {
             lowPowerMode = !lowPowerMode;
         }
 
@@ -119,7 +117,7 @@ public class MecanumDrivetrain {
     public void processInputFC(Gamepad gamepad) {
 
         runmode = "Field-Centric";
-        if (sqaureDebounce.isPressed(gamepad.square)) {
+        if (aDebounce.isPressed(gamepad.square)) {
             lowPowerMode = !lowPowerMode;
         }
 

@@ -35,16 +35,15 @@ public class Utils {
         Random rand = new Random();
         String[] catchphrases = {
                 "Your skills are impressive, Pilot. It is good to have you return.",
-                "“If brute force isn’t working, you aren’t using enough of it”",
+                "If brute force isn’t working, you aren’t using enough of it",
                 "Welcome back, sharpshooter pilot",
                 "The sword is yours",
                 "No Technical Difficulties detected!",
-                "You got the sun on the moon.",
-                "Alea iacta est: The die is cast.",
                 "Am I not merciful?",
-                "Maybe I was wrong to consider us allies.",
                 "42-42 564.",
-                "I have a ball"
+                "A sound soul: rests, within a sound mind and sound body.",
+                "Tolerance is a boolean",
+                "Excaliburrrr "
         };
         return catchphrases[rand.nextInt(catchphrases.length)]; //Grabs from a random position in the list
     }
@@ -66,6 +65,13 @@ public class Utils {
             boolean isPressed = currentState && !previousState;
             previousState = currentState;
             return isPressed;
+        }
+    }
+
+    public static class ToggleSwitch {
+        private boolean state = false;
+        public void switchState() {
+            state = !state;
         }
     }
 }

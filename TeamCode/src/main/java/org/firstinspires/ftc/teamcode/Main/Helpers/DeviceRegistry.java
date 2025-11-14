@@ -7,9 +7,17 @@ public enum DeviceRegistry {
     BACK_LEFT_MOTOR("BLM"),
     FRONT_RIGHT_MOTOR("FRM"),
     BACK_RIGHT_MOTOR("BRM"),
+    INTAKE_MOTOR("intake"),
+    INDEXER_MOTOR("indexer"),
+    FLYWHEEL_MOTOR("flywheel"),
+
+    //SERVOS
+    HOOD_SERVO("hood"),
+
 
     //IMU
     IMU("imu");
+
 
 
     private final String deviceName;

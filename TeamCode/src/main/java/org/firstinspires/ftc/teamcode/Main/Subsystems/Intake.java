@@ -1,4 +1,35 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
+
+
 public class Intake {
+    public DcMotor intakeMotor;
+    public boolean running;
+
+    public Intake(HardwareMap hardwareMap) {
+        intakeMotor = hardwareMap.dcMotor.get(DeviceRegistry.INTAKE_MOTOR.str());
+        intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    /**
+     * Intake on leftbumper
+     * Outtake on rightbumper
+     * Default -> motor still
+     */
+    public void processInput(Gamepad gamepad) {
+        if (gamepad.left_bumper) { intakeSpinup(); }
+        else if (gamepad.right_bumper) { intakeReverse(); }
+        else { intakeStop(); }
+    }
+
+    private void intakeSpinup() { intakeMotor.setPower(1); }
+    private void intakeReverse() { intakeMotor.setPower(-1); }
+    private void intakeStop() { intakeMotor.setPower(0); }
 }
