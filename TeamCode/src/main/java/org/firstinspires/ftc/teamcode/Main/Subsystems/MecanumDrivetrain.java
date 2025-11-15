@@ -153,6 +153,21 @@ public class MecanumDrivetrain {
         backRightMotor.setPower(backRightPower);
     }
 
+    public void goForward(double pow,double actionLen) {
+        frontLeftMotor.setPower(pow);
+        backLeftMotor.setPower(pow);
+        frontRightMotor.setPower(pow);
+        backLeftMotor.setPower(pow);
+
+        Utils.halt((long) actionLen);
+    }
+
+    public void stopMotors() {
+        frontLeftMotor.setPower(0);
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
+    }
     public boolean isLowPowerMode() {
         return lowPowerMode;
     }
