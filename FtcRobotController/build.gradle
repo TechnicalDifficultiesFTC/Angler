@@ -17,14 +17,26 @@ android {
     buildFeatures {
         buildConfig = true
     }
-    compileSdk 34
 
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     namespace = 'com.qualcomm.ftcrobotcontroller'
+}
+
+// ensure this module has the repo (if not present at project-level)
+repositories {
+    mavenCentral()
+    google()
+    maven { url = "https://mymaven.bylazar.com/releases" }
+}
+
+// add the panels artifact so RobotController packages it
+dependencies {
+    implementation 'com.bylazar:fullpanels:1.0.7'
 }
 
 apply from: '../build.dependencies.gradle'

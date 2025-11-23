@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.Main.Helpers;
 
+import com.bylazar.configurables.annotations.Configurable;
+
 /**
  * Holds static values
  */
+@Configurable
 public class Config {
     public static class Drivetrain {
         //Before motor power is sent to the motors, they are multiplied by min/max drivetrain speed
@@ -12,6 +15,10 @@ public class Config {
     }
     public static class ControllerConstants {
         public static double TRIGGER_THRESHOLD = 0.1;
+    }
+
+    public static class TurretConstants {
+        public static double MAX_VELOCITY_RADIANS_PER_SEC = 3.563;
     }
 
     /**

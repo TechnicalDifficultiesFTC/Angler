@@ -10,13 +10,15 @@ public enum DeviceRegistry {
     INTAKE_MOTOR("intake"),
     INDEXER_MOTOR("indexer"),
     FLYWHEEL_MOTOR("flywheel"),
+    TURRET_MOTOR("turret"),
 
     //SERVOS
     HOOD_SERVO("hood"),
 
 
     //IMU
-    IMU("imu");
+    IMU("imu"),
+    PINPOINT("pinpoint");
 
 
 

@@ -11,7 +11,13 @@ public class Utils {
         }
     }
 
-    public static double roundAsDouble(double input, int decimalPlaces) {
+    /**
+            * Rounds the input to the amount of decimal places provided as the (int) second parameter
+     * @param input Double to be rounded
+     * @param decimalPlaces Decimal places to round to (EX: 4.2456 rounded to 2 would be 4.24)
+     * @return Formatted string of double rounded
+     */
+    public static double rad(double input, int decimalPlaces) {
         double scale = Math.pow(10, decimalPlaces);
         return Math.round(input * scale) / scale;
     }
@@ -19,15 +25,16 @@ public class Utils {
     /**
      * Rounds the input to the amount of decimal places provided as the (int) second parameter
      * @param input Double to be rounded
-     * @param decimalPlacesToRoundTo Decimal places to round to (EX: 4.2456 rounded to 2 would be 4.24)
+     * @param decimalPlaces Decimal places to round to (EX: 4.2456 rounded to 2 would be 4.24)
      * @return Formatted string of double rounded
      */
-    public static String roundAsString(double input, int decimalPlacesToRoundTo) {
-        double rounded = roundAsDouble(input, decimalPlacesToRoundTo);
-        return String.format("%."+decimalPlacesToRoundTo+"f", rounded);
+    public static String ras(double input, int decimalPlaces) {
+        return String.valueOf(rad(input, decimalPlaces));
     }
+
     /**
-     * Generates a random "MOTM" to display on the telemetry feed, just for fun, servos no real purpose
+     * Generates a random "MOTM" (Message of the match) to display on the telemetry feed,
+     * just for fun, serves no real purpose
      * @return [String]
      */
     public static String generateMOTM() {
@@ -40,10 +47,10 @@ public class Utils {
                 "The sword is yours",
                 "No Technical Difficulties detected!",
                 "Am I not merciful?",
-                "42-42 564.",
-                "A sound soul: rests, within a sound mind and sound body.",
+                "42-42-564.",
                 "Tolerance is a boolean",
-                "Excaliburrrr "
+                "Pushing P (Program)",
+                "Its a terrible day for rain.",
         };
         return catchphrases[rand.nextInt(catchphrases.length)]; //Grabs from a random position in the list
     }
@@ -70,8 +77,9 @@ public class Utils {
 
     public static class ToggleSwitch {
         private boolean state = false;
-        public void switchState() {
+        public boolean switchState() {
             state = !state;
+            return state;
         }
     }
 }

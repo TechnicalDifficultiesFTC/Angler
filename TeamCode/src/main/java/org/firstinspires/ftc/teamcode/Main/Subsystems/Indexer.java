@@ -16,7 +16,7 @@ public class Indexer {
     public String indexingStatus = "Indexer is not active";
     public Indexer(HardwareMap hardwareMap) {
         indexerMotor = hardwareMap.dcMotor.get(DeviceRegistry.INDEXER_MOTOR.str());
-        indexerMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        indexerMotor.setDirection(DcMotor.Direction.REVERSE);
         indexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         lbDebounce = new Utils.Debounce();

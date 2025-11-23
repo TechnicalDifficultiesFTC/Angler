@@ -15,8 +15,8 @@ public class DrivetrainRobotCentricMini extends LinearOpMode {
         DcMotor frontRightMotor = hardwareMap.dcMotor.get("FRM");
         DcMotor backRightMotor = hardwareMap.dcMotor.get("BRM");
 
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
         backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -27,11 +27,9 @@ public class DrivetrainRobotCentricMini extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            y = -gamepad1.left_stick_y; //Forward and back
-
-            x = gamepad1.right_stick_x; //Rotation
-
-            rx = gamepad1.left_stick_x; //Mecanum Strafe
+            y = -gamepad1.left_stick_y; // Remember, Y stick is reversed!
+            x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            rx = gamepad1.right_stick_x;
 
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,

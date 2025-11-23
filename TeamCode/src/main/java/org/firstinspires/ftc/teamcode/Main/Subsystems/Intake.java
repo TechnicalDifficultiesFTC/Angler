@@ -6,15 +6,15 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
+import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 
 
 public class Intake {
     public DcMotor intakeMotor;
-    public boolean running;
 
     public Intake(HardwareMap hardwareMap) {
         intakeMotor = hardwareMap.dcMotor.get(DeviceRegistry.INTAKE_MOTOR.str());
-        intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        intakeMotor.setDirection(DcMotor.Direction.FORWARD);
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
@@ -24,8 +24,8 @@ public class Intake {
      * Default -> motor still
      */
     public void processInput(Gamepad gamepad) {
-        if (gamepad.left_bumper) { intakeSpinup(); }
-        else if (gamepad.right_bumper) { intakeReverse(); }
+        if (Utils.triggerBoolean(gamepad.left_trigger)) { intakeSpinup(); }
+        else if (Utils.triggerBoolean(gamepad.right_trigger)) { intakeReverse(); }
         else { intakeStop(); }
     }
 
