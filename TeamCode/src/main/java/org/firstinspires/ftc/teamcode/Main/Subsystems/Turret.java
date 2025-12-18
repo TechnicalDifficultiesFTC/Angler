@@ -20,19 +20,26 @@ public class Turret {
     private double flywheelTargetVelocity = Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC *
             ((flywheelTargetVelocityPercentage)*.01);
     boolean shooterRunning;
-    DcMotorEx flywheelMotor;
+    public DcMotorEx turretMotor;
+    public DcMotorEx flywheelMotor;
     CRServo hoodServo;
     Utils.Debounce leftArrowDebounce;
     Utils.Debounce rightArrowDebounce;
     Utils.Debounce yDebounce;
     Utils.Debounce xDebounce;
 
+    private String rotationStatus = "";
+
     public Turret(HardwareMap hardwareMap) {
         flywheelMotor = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.FLYWHEEL_MOTOR.str());
+        turretMotor = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.TURRET_MOTOR.str());
         hoodServo = hardwareMap.crservo.get(DeviceRegistry.HOOD_SERVO.str());
 
         flywheelMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         flywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         leftArrowDebounce = new Utils.Debounce();
         rightArrowDebounce = new Utils.Debounce();
@@ -43,12 +50,30 @@ public class Turret {
 
     /* Input Handling */
 
+    public String getRotationStatus() {
+        return rotationStatus;
+    }
+
     public void processInput(Gamepad gamepad2) {
         handleHoodAngling(gamepad2);
+        handleTurretRotationAsGamepad(gamepad2);
         handleFlywheelTargetVelocity(gamepad2);
         handleFlywheel(gamepad2);
     }
 
+    private void handleTurretRotationAsGamepad(Gamepad gamepad) {
+        double turretPower = gamepad.right_stick_x;
+        turretMotor.setPower(turretPower/2);
+        if (turretMotor.getCurrentPosition() >=
+                Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS) {
+            rotationStatus = "hit positive rotation limit";
+        }
+        else if (turretMotor.getCurrentPosition() <=
+                Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS) {
+            rotationStatus = "hit negative rotation limit";
+        }
+        else { turretMotor.setPower(turretPower); }
+    }
     private void handleFlywheelTargetVelocity(Gamepad gamepad) {
         if (xDebounce.isPressed(gamepad.x)
             ) {

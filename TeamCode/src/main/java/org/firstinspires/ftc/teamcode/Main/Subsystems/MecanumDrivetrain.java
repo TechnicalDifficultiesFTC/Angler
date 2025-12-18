@@ -54,7 +54,7 @@ public class MecanumDrivetrain {
 
         //Back Motors
         backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
         //ZPM
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -157,7 +157,7 @@ public class MecanumDrivetrain {
         frontLeftMotor.setPower(pow);
         backLeftMotor.setPower(pow);
         frontRightMotor.setPower(pow);
-        backLeftMotor.setPower(pow);
+        backRightMotor.setPower(pow);
 
         Utils.halt((long) actionLen);
     }
@@ -175,15 +175,17 @@ public class MecanumDrivetrain {
     /* PINPOINT */
 
     /**
-     * Check controller for pinpoint re-zeroing
+     * Check controller for pinpoint re-zeroing and update pinpoint
      */
     public void processInputPinpoint(Gamepad gamepad) {
         if (gamepad.start) {
             // You could use readings from April Tags here to give a new known position to the pinpoint
             pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
         }
+        pinpoint.update();
     }
-    public void configurePinpoint(){
+
+    public void configurePinpoint() {
         /*
          *  Set the odometry pod positions relative to the point that you want the position to be measured from.
          *
@@ -193,7 +195,7 @@ public class MecanumDrivetrain {
          *  The Y pod offset refers to how far forwards from the tracking point the Y (strafe) odometry pod is.
          *  Forward of center is a positive number, backwards is a negative number.
          */
-        pinpoint.setOffsets(-84.0, -168.0, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
+        pinpoint.setOffsets(104, -104, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
 
         /*
          * Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
@@ -223,12 +225,7 @@ public class MecanumDrivetrain {
         pinpoint.resetPosAndIMU();
     }
 
-    public String getPinpointFeedback() {
-        pinpoint.update();
-        Pose2D pose2D = pinpoint.getPosition();
-        return (
-            "X coordinate (IN)" + pose2D.getX(DistanceUnit.INCH) +
-            "\nY coordinate (IN)" + pose2D.getY(DistanceUnit.INCH) +
-            "\nHeading angle (DEGREES)" + pose2D.getHeading(AngleUnit.DEGREES));
+    public GoBildaPinpointDriver getPinpoint() {
+        return pinpoint;
     }
 }

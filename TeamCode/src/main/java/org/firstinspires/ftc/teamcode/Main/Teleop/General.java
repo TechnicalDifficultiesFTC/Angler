@@ -63,7 +63,7 @@ public class General extends LinearOpMode {
 
             //Indexer
             telemetry.addLine("INDEXER: " +
-                    "\nStatus: " + indexer.indexingStatus);
+                    "\nStatus: " + indexer.getIndexingStatus());
             telemetry.addLine();
 
             //Turret

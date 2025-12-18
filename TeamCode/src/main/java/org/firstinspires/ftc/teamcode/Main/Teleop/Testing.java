@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
@@ -19,9 +21,8 @@ public class Testing extends LinearOpMode {
     Indexer indexer;
     Turret turret;
     String MOTM = Utils.generateMOTM();
-    double velocity;
     double amps;
-    double maxVel = 0;
+    double maxVelPercent = 0;
 
     @Override
     public void runOpMode() {
@@ -37,13 +38,12 @@ public class Testing extends LinearOpMode {
         telemetry.addLine(Config.dasshTag);
         telemetry.addLine(MOTM);
         telemetry.addLine();
-        telemetry.addLine("INITIALIZED DRIVETRAIN");
         telemetry.update();
         waitForStart();
 
         while(opModeIsActive()) {
             //Subsystem calls
-            //mecanumDrivetrain.processInputFC(gamepad1); //DT
+            mecanumDrivetrain.processInputRC(gamepad1); //DT
             intake.processInput(gamepad1);
             indexer.processInput(gamepad1);
             turret.processInput(gamepad2);
@@ -63,18 +63,35 @@ public class Testing extends LinearOpMode {
             telemetry.addLine("Intake Power: " + intake.intakeMotor.getPower());
 
             //Turret
-            velocity = turret.getFlywheelVelocity(AngleUnit.RADIANS);
             amps = turret.getFlywheelAmps();
 
-            if (velocity > maxVel) {
-                maxVel = velocity;
+            Pose2D pose2D = mecanumDrivetrain.getPinpoint().getPosition();
+
+            if (turret.getFlywheelVelocityPercentage() > maxVelPercent) {
+                maxVelPercent = turret.getFlywheelVelocityPercentage();
             }
 
-            telemetry.addLine("\nFlywheel Rads/Secs: " + velocity);
-            telemetry.addLine("Max Velocity Rads/Secs: " + maxVel);
+            //Flywheel feedback
+            telemetry.addLine("\nFlywheel %: " + turret.getFlywheelVelocityPercentage());
+            telemetry.addLine("Max Velocity % Reached: " + maxVelPercent);
             telemetry.addLine("Flywheel Amps: " + amps);
 
-            //Indexer
+            //Turret feedback
+            telemetry.addLine(turret.getRotationStatus());
+            telemetry.addLine("Turret position (TICKS): " +
+                    turret.turretMotor.getCurrentPosition());
+
+            //Pinpoint feedback
+            //X
+            telemetry.addLine("\nX coordinate (IN)" +
+                    Utils.ras(pose2D.getX(DistanceUnit.INCH),2));
+            //Y
+            telemetry.addLine("Y coordinate (IN)" +
+                    Utils.ras(pose2D.getY(DistanceUnit.INCH),2));
+            //Heading
+            telemetry.addLine("Heading Angle (Degrees) " +
+                    Utils.ras(pose2D.getHeading(AngleUnit.DEGREES),2));
+
             telemetry.update();
         }
     }
