@@ -73,7 +73,7 @@ public class General extends LinearOpMode {
                     (turret.getFlywheelVelocity(AngleUnit.RADIANS),2);
 
             telemetry.addLine( "TURRET: " +
-                    "\n Flywheel Status: " + turret.getFlywheelStatus() +
+                    "\n Flywheel Status: " + (turret.getFlywheelReady() ? "Ready" : "Not Ready") +
 
                     "\n\nFlywheel Target Velocity (Rads/Secs): " + targetVelocity +
                     "\nFlywheel Velocity (Rads/Secs): " + velocity +

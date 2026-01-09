@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop;
+package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
-@TeleOp(name="Testing/RUN ME!!!", group="Test")
+@TeleOp(name="Testing General", group="Tuning")
 public class Testing extends LinearOpMode {
     //Declarations
     MecanumDrivetrain mecanumDrivetrain;

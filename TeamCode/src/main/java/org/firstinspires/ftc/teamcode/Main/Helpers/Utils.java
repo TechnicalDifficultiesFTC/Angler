@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.Main.Helpers;
 import java.util.Random;
 
 public class Utils {
+    public static double dist(double a, double b) {
+        return Math.abs(a-b);
+    }
     public static void halt(long millis) {
         try {
             Thread.sleep(millis);
@@ -32,6 +35,9 @@ public class Utils {
         return String.valueOf(rad(input, decimalPlaces));
     }
 
+    public static String ras(double input) {
+        return String.valueOf(rad(input, 2));
+    }
     /**
      * Generates a random "MOTM" (Message of the match) to display on the telemetry feed,
      * just for fun, serves no real purpose
@@ -51,6 +57,8 @@ public class Utils {
                 "Tolerance is a boolean",
                 "Pushing P (Program)",
                 "Its a terrible day for rain.",
+                "Victory is never decided by mobile suit performance alone, nor by the skill of " +
+                        "the pilot, alone. The result itself is only the truth!"
         };
         return catchphrases[rand.nextInt(catchphrases.length)]; //Grabs from a random position in the list
     }
@@ -72,14 +80,6 @@ public class Utils {
             boolean isPressed = currentState && !previousState;
             previousState = currentState;
             return isPressed;
-        }
-    }
-
-    public static class ToggleSwitch {
-        private boolean state = false;
-        public boolean switchState() {
-            state = !state;
-            return state;
         }
     }
 }

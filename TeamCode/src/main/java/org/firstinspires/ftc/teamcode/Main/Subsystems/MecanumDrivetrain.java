@@ -49,12 +49,12 @@ public class MecanumDrivetrain {
         backRightMotor = hardwareMap.dcMotor.get(DeviceRegistry.BACK_RIGHT_MOTOR.str());
 
         //Front Motors
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontLeftMotor.setDirection(Config.Drivetrain.FLMD);
+        frontRightMotor.setDirection(Config.Drivetrain.FRMD);
 
         //Back Motors
-        backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        backLeftMotor.setDirection(Config.Drivetrain.BLMD);
+        backRightMotor.setDirection(Config.Drivetrain.BRMD);
 
         //ZPM
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
