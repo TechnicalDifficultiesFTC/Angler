@@ -1,13 +1,7 @@
 package org.firstinspires.ftc.teamcode.Main.Helpers;
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.pathConstraints;
-
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.FollowerBuilder;
-import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 /**
  * Holds static values
@@ -35,6 +29,20 @@ public class Config {
         public static double TURRET_ERROR_MARGIN_TICKS = 75;
         public static double TURRET_POSITIVE_LIMIT_TICKS = 1652;
         public static double TURRET_NEGATIVE_LIMIT_TICKS = -953;
+        public static double POWER = 17;
+        public static double TICKSPERDEG = (double) -790 /90;
+        public static class FlywheelPIDF {
+            public static double p;
+            public static double i;
+            public static double d;
+            public static double f;
+        }
+    }
+
+    public static class IndexerConstants {
+        //These are positions to go to represented by servo ticks (0,1)
+        public static double servoIncisionTicks = .8;
+        public static double servoExpansionTicks = .625;
     }
 
     /**

@@ -14,8 +14,7 @@ public enum DeviceRegistry {
 
     //SERVOS
     HOOD_SERVO("hood"),
-    KICKER_SERVO_TOP("kickert"),
-    KICKER_SERVO_BOTTOM("kickerb"),
+    INDEXER_SERVO("indexarm"),
 
     //IMU
     IMU("imu"),

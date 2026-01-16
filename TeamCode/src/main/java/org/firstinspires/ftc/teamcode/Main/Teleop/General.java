@@ -46,8 +46,8 @@ public class General extends LinearOpMode {
             //Subsystem calls
             mecanumDrivetrain.processInputRC(gamepad1); //DT
             intake.processInput(gamepad1); //Intake
-            indexer.processInput(gamepad2); //Indexer
-            turret.processInput(gamepad2); //Turret
+            indexer.processInput(gamepad1); //Indexer
+            turret.processInput(gamepad1); //Turret
 
             /* TELEMETRY!!!!! */
             telemetry.addLine(MOTM);

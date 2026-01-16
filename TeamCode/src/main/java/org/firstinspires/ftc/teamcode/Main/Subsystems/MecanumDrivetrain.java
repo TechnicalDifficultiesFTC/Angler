@@ -161,7 +161,6 @@ public class MecanumDrivetrain {
 
         Utils.halt((long) actionLen);
     }
-
     public void stopMotors() {
         frontLeftMotor.setPower(0);
         backLeftMotor.setPower(0);

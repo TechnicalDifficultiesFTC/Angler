@@ -5,17 +5,15 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 
 public class Indexer {
     public DcMotor indexerMotor;
-    public CRServo kickerTopServo;
-    public CRServo kickerBottomServo;
-    private final Utils.Debounce lbDebounce;
-    private final Utils.Debounce rbDebounce;
-    private final Utils.Debounce bDebounce;
+    public Servo indexerServo;
     private String indexingStatus = "Indexer is not active";
     public Indexer(HardwareMap hardwareMap) {
         //Indexer Motor Setup
@@ -23,47 +21,55 @@ public class Indexer {
         indexerMotor.setDirection(DcMotor.Direction.FORWARD);
         indexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //Kicker Servo Setup
-        kickerTopServo = hardwareMap.crservo.get(DeviceRegistry.KICKER_SERVO_TOP.str());
-        kickerBottomServo = hardwareMap.crservo.get(DeviceRegistry.KICKER_SERVO_BOTTOM.str());
+        //Arm servo
+        indexerServo = hardwareMap.servo.get(DeviceRegistry.INDEXER_SERVO.str());
+        indexerServo.setDirection(Servo.Direction.FORWARD);
+    }
 
-        kickerTopServo.setDirection(DcMotorSimple.Direction.FORWARD);
-        kickerBottomServo.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        //Debounce Setup
-        lbDebounce = new Utils.Debounce();
-        rbDebounce = new Utils.Debounce();
-        bDebounce = new Utils.Debounce();
+    public void setup() {
+        indexerServo.setPosition(Config.IndexerConstants.servoExpansionTicks);
     }
 
     public void processInput(Gamepad gamepad) {
         //Controller handling x and y and b
         //Indexer main shaft
-        if (lbDebounce.isPressed(gamepad.left_bumper)) {
+        if (gamepad.leftBumperWasPressed()) {
             indexerMotor.setPower(1);
             indexingStatus = "Indexing Forward";
-        } else if (rbDebounce.isPressed(gamepad.right_bumper)) {
+        } else if (gamepad.rightBumperWasPressed()) {
             indexerMotor.setPower(-1);
             indexingStatus = "Indexing Backwards";
-        } else if (bDebounce.isPressed(gamepad.b)) {
+        } else if (gamepad.bWasPressed()) {
             indexerMotor.setPower(0);
             indexingStatus = "Holding Indexer";
         }
 
-        //Kicker servo
-        if (Utils.triggerBoolean(gamepad.left_trigger)) {
-            setKickerGearboxPower(1);
-        } else if (Utils.triggerBoolean(gamepad.right_trigger)) {
-            setKickerGearboxPower(-1);
-        } else { setKickerGearboxPower(0); }
+        //Arm servo
+        if (gamepad.dpadRightWasPressed()) {
+            indexerServo.setPosition(Config.IndexerConstants.servoIncisionTicks);
+        } else if (gamepad.dpadLeftWasPressed()) {
+            indexerServo.setPosition(Config.IndexerConstants.servoExpansionTicks);
+        }
     }
 
-    public void setKickerGearboxPower(double power) {
-        kickerTopServo.setPower(power);
-        kickerBottomServo.setPower(-power);
+    public void indexerForward() {
+        indexerMotor.setPower(1);
     }
-
+    public void indexerReverse() {
+        indexerMotor.setPower(-1);
+    }
+    public void indexerStop() {
+        indexerMotor.setPower (0);
+    }
     public String getIndexingStatus() {
         return indexingStatus;
+    }
+
+    public void moveServoIn() {
+        indexerServo.setPosition(Config.IndexerConstants.servoIncisionTicks);
+    }
+
+    public void moveServoOut() {
+        indexerServo.setPosition(Config.IndexerConstants.servoExpansionTicks);
     }
 }

@@ -73,6 +73,7 @@ public class Utils {
         return (triggerValue > Config.ControllerConstants.TRIGGER_THRESHOLD);
     }
 
+    //TODO Deprecate
     public static class Debounce {
         private boolean previousState = false;
 
