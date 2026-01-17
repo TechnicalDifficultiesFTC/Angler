@@ -60,12 +60,15 @@ public class TurretDistanceTest extends OpMode {
         //Manual turret setting functions
         turret.setFlywheelTargetVelocityPercentage(targetVel);
         turret.setHoodAngle(hoodAngleTicks);
+        turret.flywheelMotor.setPower(1);
 
         //Other robot functions
-        indexer.processInput(gamepad2);
-        intake.processInput(gamepad2);
+        indexer.processInput(gamepad1);
+        intake.processInput(gamepad1);
 
         telemetry.addLine("MOTM: " + MOTM);
+        telemetry.addLine("Shooter running? " + turret.shooterRunning);
+        telemetry.addLine("Shooter power: " + turret.flywheelMotor.getPower());
         telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(turret.hoodServo.getPosition()));
         telemetry.addLine();
         telemetry.addLine("Target Velocity: " + Utils.ras(turret.getFlywheelTargetVelocityPercentage()));

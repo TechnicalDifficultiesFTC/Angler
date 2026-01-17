@@ -26,7 +26,7 @@ public class Turret {
 
     public static double turretOffsetY = 0;
     public static double turretOffsetX  = -2;
-    boolean shooterRunning;
+    public boolean shooterRunning;
     public DcMotorEx turretMotor;
     public DcMotorEx flywheelMotor;
     //CRServo hoodServo;
