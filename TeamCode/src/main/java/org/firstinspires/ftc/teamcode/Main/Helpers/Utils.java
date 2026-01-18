@@ -73,15 +73,17 @@ public class Utils {
         return (triggerValue > Config.ControllerConstants.TRIGGER_THRESHOLD);
     }
 
-    //TODO Deprecate
-    public static class Debounce {
-        private boolean previousState = false;
 
-        public boolean isPressed(boolean currentState) {
-            boolean isPressed = currentState && !previousState;
-            previousState = currentState;
-            return isPressed;
-        }
+    /**
+     * Convert a velocity in radians/sec to percent of configured max velocity.
+     */
+    public static double velocityRadiansToPercentage(double radians) {
+        // Radians to percent
+        return (radians / Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC) * 100.0;
+    }
+
+    public static double velocityPercentToRadians(double percent) {
+        return Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC * ((percent)*.01);
     }
 }
 

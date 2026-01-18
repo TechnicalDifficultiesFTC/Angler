@@ -18,7 +18,8 @@ public enum DeviceRegistry {
 
     //IMU
     IMU("imu"),
-    PINPOINT("pinpoint");
+    PINPOINT("pinpoint"),
+    COLOR_SENSOR("colorsensor");
 
 
 

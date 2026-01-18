@@ -24,14 +24,25 @@ public class Config {
     }
     @Configurable
     public static class TurretConstants {
+
         public static double MAX_VELOCITY_RADIANS_PER_SEC = 3.563;
+        //Error margins for the "ready!" info message
         public static double FLYWHEEL_ERROR_MARGIN_RADS = .15;
         public static double TURRET_ERROR_MARGIN_TICKS = 75;
+
+        //Turret limits
         public static double TURRET_POSITIVE_LIMIT_TICKS = 1652;
         public static double TURRET_NEGATIVE_LIMIT_TICKS = -953;
         public static double POWER = 17;
-        public static double TICKSPERDEG = (double) -790 /90;
+        public static double TICKSPERDEG = (double) 790/90;
         public static class FlywheelPIDF {
+            public static double p;
+            public static double i;
+            public static double d;
+            public static double f;
+        }
+
+        public static class TurretPIDF {
             public static double p;
             public static double i;
             public static double d;

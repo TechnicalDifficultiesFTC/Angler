@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -58,7 +57,7 @@ public class TurretDistanceTest extends OpMode {
         }
 
         //Manual turret setting functions
-        turret.setFlywheelTargetVelocityPercentage(targetVel);
+        turret.setFlywheelTargetVelocityAsPercentage(targetVel);
         turret.setHoodAngle(hoodAngleTicks);
         turret.flywheelMotor.setPower(1);
 
@@ -71,8 +70,8 @@ public class TurretDistanceTest extends OpMode {
         telemetry.addLine("Shooter power: " + turret.flywheelMotor.getPower());
         telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(turret.hoodServo.getPosition()));
         telemetry.addLine();
-        telemetry.addLine("Target Velocity: " + Utils.ras(turret.getFlywheelTargetVelocityPercentage()));
-        telemetry.addLine("Velocity %: " + Utils.ras(turret.getFlywheelVelocityPercentage()));
+        telemetry.addLine("Target Velocity: " + Utils.ras(turret.getFlywheelTargetVelocityAsRadians()));
+        telemetry.addLine("Velocity %: " + Utils.ras(turret.getFlywheelVelocityAsPercentage()));
         telemetry.addLine();
         telemetry.addLine("Ready?: " + (turret.getFlywheelReady() ? "OK" : "NO"));
     }

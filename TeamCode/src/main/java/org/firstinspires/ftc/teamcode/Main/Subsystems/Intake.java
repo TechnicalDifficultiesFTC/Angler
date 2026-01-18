@@ -30,7 +30,7 @@ public class Intake {
         else { intakeStop(); }
     }
 
-    private void intakeSpinup() { intakeMotor.setPower(1); }
-    private void intakeReverse() { intakeMotor.setPower(-1); }
-    private void intakeStop() { intakeMotor.setPower(0); }
+    public void intakeSpinup() { intakeMotor.setPower(1); }
+    public void intakeReverse() { intakeMotor.setPower(-1); }
+    public void intakeStop() { intakeMotor.setPower(0); }
 }

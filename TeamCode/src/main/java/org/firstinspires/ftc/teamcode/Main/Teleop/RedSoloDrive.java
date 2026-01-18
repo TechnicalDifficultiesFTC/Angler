@@ -50,7 +50,7 @@ public class RedSoloDrive extends OpMode {
 
         intake.processInput(gamepad1); //Intake
         indexer.processInput(gamepad2); //Indexer
-        turret.processInput(gamepad2); //Turret
+        //turret.processInput(gamepad2); //Turret
         follower.update();
 
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);

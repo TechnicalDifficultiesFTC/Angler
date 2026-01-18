@@ -30,7 +30,6 @@ public class MecanumDrivetrain {
     double frontRightPower;
     double backRightPower;
     boolean lowPowerMode;
-    Utils.Debounce aDebounce = new Utils.Debounce();
 
     public double botHeading;
 
@@ -83,7 +82,7 @@ public class MecanumDrivetrain {
 
         processInputPinpoint(gamepad);
 
-        if (aDebounce.isPressed(gamepad.a)) {
+        if (gamepad.aWasPressed()) {
             lowPowerMode = !lowPowerMode;
         }
 
@@ -112,13 +111,14 @@ public class MecanumDrivetrain {
      * Handle drivetrain logic and update motors as such
      * @param gamepad All input from gamepad (1)
      */
+    //TODO TESTME
     public void processInputFC(Gamepad gamepad) {
 
         runmode = "Field-Centric";
 
         processInputPinpoint(gamepad);
 
-        if (aDebounce.isPressed(gamepad.square)) {
+        if (gamepad.aWasPressed()) {
             lowPowerMode = !lowPowerMode;
         }
 
@@ -132,7 +132,7 @@ public class MecanumDrivetrain {
             imu.resetYaw();
         }
 
-        botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        botHeading = pinpoint.getHeading(AngleUnit.RADIANS);
 
         //Rotate the movement direction counter to the bot's rotation
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);

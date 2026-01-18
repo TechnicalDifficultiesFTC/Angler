@@ -5,9 +5,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -18,23 +16,21 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 
 @Configurable
 public class Turret {
-    private double flywheelTargetVelocityPercentage = 70;
-    private double flywheelTargetVelocity = Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC *
-            ((flywheelTargetVelocityPercentage)*.01);
+//    private double flywheelTargetVelocityPercentage = 70;
+//    private double flywheelTargetVelocity = Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC *
+//            ((flywheelTargetVelocityPercentage)*.01);
 
-    private int turretTargetPos = 0;
-
+    //You can't retrieve target velocities in run to position PID mode so we track it internally
+    //here!
+    public double flywheelTargetVelocityAsRadians;
     public static double turretOffsetY = 0;
     public static double turretOffsetX  = -2;
     public boolean shooterRunning;
     public DcMotorEx turretMotor;
     public DcMotorEx flywheelMotor;
+
     //CRServo hoodServo;
     public Servo hoodServo;
-    Utils.Debounce leftArrowDebounce;
-    Utils.Debounce rightArrowDebounce;
-    Utils.Debounce yDebounce;
-    Utils.Debounce xDebounce;
 
     public static double blueGoalX = 0;
     public static double blueGoalY = 144;
@@ -42,18 +38,17 @@ public class Turret {
     public static double redGoalY  = 144;
     public static int pos = 0;
 
-    private String rotationStatus = "";
 
     public Turret(HardwareMap hardwareMap) {
         flywheelMotor = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.FLYWHEEL_MOTOR.str());
         turretMotor = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.TURRET_MOTOR.str());
 
-        //hoodServo = hardwareMap.crservo.get(DeviceRegistry.HOOD_SERVO.str());
         hoodServo = hardwareMap.servo.get(DeviceRegistry.HOOD_SERVO.str());
         hoodServo.setDirection(Servo.Direction.FORWARD);
 
         flywheelMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         flywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //Turret motor setup
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -61,92 +56,12 @@ public class Turret {
 
         //Zero turret motor encoder
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        leftArrowDebounce = new Utils.Debounce();
-        rightArrowDebounce = new Utils.Debounce();
-
-        yDebounce = new Utils.Debounce();
-        xDebounce = new Utils.Debounce();
-    }
-
-    /* Input Handling */
-
-    public String getRotationStatus() {
-        return rotationStatus;
-    }
-
-    public void processInput(Gamepad gamepad2) {
-        //handleHoodAngling(gamepad2);
-        //handleTurretRotationAsGamepad(gamepad2);
-        handleFlywheelTargetVelocity(gamepad2);
-        handleFlywheel(gamepad2);
-    }
-
-//    private void handleTurretRotationAsGamepad(Gamepad gamepad) {
-//        double turretPower = gamepad.right_stick_x;
-//        turretMotor.setPower(turretPower/2);
-//        if (turretMotor.getCurrentPosition() >=
-//                Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS) {
-//            rotationStatus = "hit positive rotation limit";
-//        }
-//        else if (turretMotor.getCurrentPosition() <=
-//                Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS) {
-//            rotationStatus = "hit negative rotation limit";
-//        }
-//        else { turretMotor.setPower(turretPower); }
-//    }
-
-    private void handleFlywheelTargetVelocity(Gamepad gamepad) {
-        if (gamepad.xWasPressed()
-            ) {
-                flywheelTargetVelocityPercentage += 5;
-        }
-        else if (gamepad.yWasPressed()
-                    && !(flywheelTargetVelocityPercentage <= 20) //Limit from going under 20% max speed
-            ) {
-                flywheelTargetVelocityPercentage -= 5;
-
-        } else if (gamepad.backWasPressed()) {
-                flywheelTargetVelocityPercentage = 70;
-            }
-
-        if (shooterRunning) { flywheelAccelerate(); }
-    }
-
-    private void handleFlywheel(Gamepad gamepad) {
-        if (leftArrowDebounce.isPressed(gamepad.dpad_left)) {
-            flywheelAccelerate();
-        }
-        else if (rightArrowDebounce.isPressed(gamepad.dpad_right)) { flywheelDecelerate(); }
-    }
-
-    public void setTurretPosition(int pos) {
-        turretTargetPos = pos;
-        turretMotor.setPositionPIDFCoefficients(Config.TurretConstants.POWER);
-        turretMotor.setTargetPosition(pos);
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turretMotor.setPower(1);
-    }
-//    private void handleHoodAngling(Gamepad gamepad) {
-//        if (gamepad.dpad_up) { raiseHood(); }
-//        else if (gamepad.dpad_down) { lowerHood(); }
-//        else { holdHood(); }
-//    }
-
-    public void setFlywheelTargetVelocityPercentage(double percent) {
-        flywheelTargetVelocityPercentage = percent;
-        flywheelAccelerate();
     }
 
-    public void setTurretPIDF(double p, double i, double d, double f) {
-        turretMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION,
-                new PIDFCoefficients(p, i, d, f));
-    }
+    /* AUTOMATIC HANDLING */
 
-    public void setFlywheelPIDF(double p, double i, double d, double f) {
-        flywheelMotor.setVelocityPIDFCoefficients(p,i,d,f);
-    }
+
     public void handleTurretRotation (Pose botPose, boolean isBlue) {
         double heading = botPose.getHeading();
         double x = botPose.getX();
@@ -195,6 +110,25 @@ public class Turret {
         //flywheelMotor.setVelocity(vel);
     }
 
+    public void setTurretPosition(int pos) {
+        //TODO Tune Power?? where did this come from lol
+        turretMotor.setPositionPIDFCoefficients(Config.TurretConstants.POWER);
+        turretMotor.setTargetPosition(pos);
+        turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turretMotor.setPower(1);
+    }
+
+    public void setFlywheelTargetVelocityAsPercentage(double percent) {
+        // Percent to radians
+        double flywheelVelocity = Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC *
+                ((percent)*.01);
+
+        flywheelAccelerate(flywheelVelocity);
+    }
+    public void setFlywheelTargetVelocityAsRadians(double radians) {
+        flywheelMotor.setVelocity(radians, AngleUnit.RADIANS);
+    }
+
     /* Hood Methods */
 
     public void setHoodAngle(double pos) {
@@ -202,18 +136,19 @@ public class Turret {
     }
 
     /* Flywheel Methods */
-    private void flywheelAccelerate() {
+    private void flywheelAccelerate(double flywheelTargetVelocityAsRadians ) {
         shooterRunning = true;
-        flywheelTargetVelocity = Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC *
-                ((flywheelTargetVelocityPercentage)*.01);
-
-        flywheelMotor.setVelocity(flywheelTargetVelocity, AngleUnit.RADIANS);
+        this.flywheelTargetVelocityAsRadians = flywheelTargetVelocityAsRadians;
+        flywheelMotor.setVelocity(flywheelTargetVelocityAsRadians, AngleUnit.RADIANS);
     }
 
     private void flywheelDecelerate() {
         shooterRunning = false;
         flywheelMotor.setPower(0);
     }
+
+    /* GETTERS!! */
+
     public double getFlywheelPower() {
         return flywheelMotor.getPower();
     }
@@ -221,34 +156,33 @@ public class Turret {
         return flywheelMotor.getCurrent(CurrentUnit.AMPS);
     }
 
-
     /**
      * @return True if flywheel velocity is within an acceptable margin of error
      * Acceptable margin of error is defined in turret constants
      */
     public boolean getFlywheelReady() {
-        double vel = getFlywheelVelocity(AngleUnit.RADIANS);
-        double targetVel = getFlywheelTargetVelocity();
+        double vel = getFlywheelVelocityAsRadians();
+        double targetVel = getFlywheelTargetVelocityAsRadians();
         return Utils.dist(vel, targetVel) <= Config.TurretConstants.FLYWHEEL_ERROR_MARGIN_RADS;
     }
-
     /**
      * @return Percent of total velocity achieved
      */
-    public double getFlywheelVelocityPercentage() {
-        return (getFlywheelVelocity(AngleUnit.RADIANS)/
-                Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC)*100;
+    public double getFlywheelVelocityAsPercentage() {
+        return Utils.velocityRadiansToPercentage(getFlywheelVelocityAsRadians());
     }
-
     /**
      * @return Flywheel Velocity in param angleunit
      */
-    public double getFlywheelVelocity(AngleUnit angleUnit) {
-        return flywheelMotor.getVelocity(angleUnit);
+    public double getFlywheelVelocityAsRadians() {
+        return flywheelMotor.getVelocity(AngleUnit.RADIANS);
+    }
+    public double getFlywheelTargetVelocityAsRadians() {
+        return flywheelTargetVelocityAsRadians;
     }
 
-    public double getFlywheelTargetVelocity() {
-        return flywheelTargetVelocity;
+    public double getFlywheelTargetVelocityAsPercentage() {
+        return Utils.velocityRadiansToPercentage(getFlywheelTargetVelocityAsRadians());
     }
 
     public boolean getTurretReady() {
@@ -256,16 +190,10 @@ public class Turret {
         double targetPos = getTurretTargetPos();
         return Utils.dist(pos, targetPos) <= Config.TurretConstants.TURRET_ERROR_MARGIN_TICKS;
     }
-
     public double getTurretTargetPos() {
-        return turretTargetPos;
+        return turretMotor.getTargetPosition();
     }
-
     public int getActualTurretPos() {
         return turretMotor.getCurrentPosition();
-    }
-    public int getTargetTurretPos() { return turretTargetPos; }
-    public double getFlywheelTargetVelocityPercentage() {
-        return flywheelTargetVelocityPercentage;
     }
 }
