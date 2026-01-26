@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 
-@TeleOp(name = "Field Centric Test", group = "Tuning")
+@TeleOp(name = "Field Centric Testing", group = "Testing/Systems")
 public class FieldCentricTest extends OpMode {
     GoBildaPinpointDriver goBildaPinpointDriver;
     MecanumDrivetrain drivetrain;

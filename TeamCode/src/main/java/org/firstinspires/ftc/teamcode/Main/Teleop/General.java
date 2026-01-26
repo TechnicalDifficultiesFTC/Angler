@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop;
 
+import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
@@ -10,18 +14,22 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
+@Configurable
 @TeleOp(name="GP Static Shooter v1 | Solo", group="Solo")
-public class General extends LinearOpMode {
+public class General extends OpMode {
     //Declarations
+    double percent = 50;
     MecanumDrivetrain mecanumDrivetrain;
     Intake intake;
     Indexer indexer;
     Turret turret;
     String MOTM = Utils.generateMOTM();
+    TelemetryManager panelsTelemetry;
+
+
 
     @Override
-    public void runOpMode() {
-
+    public void init() {
         /*
         CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!
          */
@@ -32,40 +40,40 @@ public class General extends LinearOpMode {
         turret = new Turret(hardwareMap); //Construct Turret
 
         //Setup
-        telemetry.setMsTransmissionInterval(10);
+        telemetry.setMsTransmissionInterval(5);
 
         telemetry.addLine(Config.dasshTag);
         telemetry.addLine(MOTM);
         telemetry.addLine();
         telemetry.addLine("INITIALIZED DRIVETRAIN, INTAKE, INDEXER, TURRET :)");
         telemetry.update();
-        waitForStart();
+        panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+    }
 
-        while(opModeIsActive()) {
+    @Override
+    public void loop() {
+
             //Subsystem calls
-            mecanumDrivetrain.processInputRC(gamepad1); //DT
-            intake.processInput(gamepad1); //Intake
+            mecanumDrivetrain.processInputFC(gamepad1); //DT
             indexer.processInput(gamepad1); //Indexer
+            intake.processInput(gamepad1); //Intake
 
             //Controls:
 
-            // Indexer
-            if (gamepad1.dpadLeftWasPressed()) {
-                indexer.moveServoOut();
-            }
-            if (gamepad1.dpadRightWasPressed()) {
-                indexer.moveServoIn();
+
+            //Shooter testing
+            if (gamepad1.dpadUpWasPressed()) {
+                percent += 5;
             }
 
-            // Intake
-            if (Utils.triggerBoolean(gamepad1.left_trigger)) {
-                intake.intakeSpinup();
+            if (gamepad1.dpadDownWasPressed()) {
+                percent -= 5;
             }
-            else if (Utils.triggerBoolean(gamepad1.right_trigger)) {
-                intake.intakeReverse();
-            } else {
-                intake.intakeStop();
+
+            if (gamepad1.yWasPressed()) {
+                turret.setFlywheelTargetVelocityAsPercentage(percent);
             }
+
 
 //            // Shooter
 //            if (gamepad1.xWasPressed()) {
@@ -74,34 +82,25 @@ public class General extends LinearOpMode {
 //            }
 
 
+            double curVelocityAsRadians = turret.getFlywheelVelocityAsRadians();
+            double curTargetVelocityAsRadians = turret.flywheelTargetVelocityAsRadians;
+            double error = curTargetVelocityAsRadians - curVelocityAsRadians;
+
+
             /* TELEMETRY!!!!! */
             telemetry.addLine(MOTM);
 
             //Drivetrain
-            telemetry.addLine("DT:");
-            telemetry.addLine("\nLPM: " + mecanumDrivetrain.isLowPowerMode());
-            telemetry.addLine("Run Mode: " + mecanumDrivetrain.runmode);
+            telemetry.addLine("\nDT LPM: " + mecanumDrivetrain.isLowPowerMode());
 
-            //Turret
-            String targetVelocity = Utils.ras
-                    (turret.getFlywheelTargetVelocityAsRadians(),2);
-            String velocity = Utils.ras
-                    (turret.getFlywheelVelocityAsRadians(),2);
-
-            telemetry.addLine( "TURRET: " +
-                    "\n Flywheel Status: " + (turret.getFlywheelReady() ? "Ready" : "Not Ready") +
-
-                    "\n\nFlywheel Target Velocity (Rads/Secs): " + targetVelocity +
-                    "\nFlywheel Velocity (Rads/Secs): " + velocity +
-                    "\nFlywheel Target Velocity Percent: " + Utils.velocityRadiansToPercentage(
-                            turret.getFlywheelTargetVelocityAsRadians()) +
-
-                    "\n\nFlywheel Power %: " + Utils.ras(
-                            (turret.getFlywheelPower() * 100),2) +
-                    "\nFlywheel Velocity %: " + Utils.ras(
-                            turret.getFlywheelVelocityAsPercentage(),2));
+            //Indexer
+            telemetry.addLine("Indexer Status: " + indexer.getIndexingStatus());
+            telemetry.addLine("Ball Seen?: " + indexer.ballHeld());
+            panelsTelemetry.addData("Error ", Utils.ras(Math.abs(error)));
+            panelsTelemetry.addData("Setpoint ", Utils.ras(curTargetVelocityAsRadians));
+            panelsTelemetry.addData("Velocity ", Utils.ras(curVelocityAsRadians));
 
             telemetry.update();
-        }
+            panelsTelemetry.update(telemetry);
     }
 }

@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
+import org.firstinspires.ftc.teamcode.Main.Helpers.Drawing;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
@@ -33,6 +34,7 @@ public class RedSoloDrive extends OpMode {
 //        follower = Constants.createFollower(hardwareMap);
 //        follower.setStartingPose(autoEndPose == null ? new Pose() : autoEndPose);
 //        follower.update();
+        Drawing.init();
 
         telemetry.setMsTransmissionInterval(10);
         telemetry.addLine(Config.dasshTag);
@@ -51,9 +53,13 @@ public class RedSoloDrive extends OpMode {
         intake.processInput(gamepad1); //Intake
         indexer.processInput(gamepad2); //Indexer
         //turret.processInput(gamepad2); //Turret
-        follower.update();
+        //follower.update();
 
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        //Might need to invert sticks here
+        //follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, true);
+
+        Drawing.drawDebug(follower);
+        Drawing.sendPacket();
 
         telemetry.addData("X: ", follower.getPose().getX());
         telemetry.addData("Y: ", follower.getPose().getY());

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.control.FilteredPIDFCoefficients;
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -8,7 +10,6 @@ import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -17,7 +18,14 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 
 @Configurable
 public class Constants {
-    public static FollowerConstants followerConstants = new FollowerConstants();
+    public static FollowerConstants followerConstants = new FollowerConstants()
+            .mass(Config.DrivetrainConstants.ROBOT_MASS_KGS)
+            .forwardZeroPowerAcceleration(-30.9171137580957064)
+            .lateralZeroPowerAcceleration(-67.54516826509496)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.05,0,0,0.01))
+            .headingPIDFCoefficients(new PIDFCoefficients(1.35,0,0.02,0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1,0.0,0.01,0.6,0.0))
+            .centripetalScaling(0.0005);
 
     //TODO what is this
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
@@ -38,14 +46,15 @@ public class Constants {
             .leftRearMotorName(DeviceRegistry.BACK_LEFT_MOTOR.str())
             .leftFrontMotorName(DeviceRegistry.FRONT_LEFT_MOTOR.str())
 
-            .leftFrontMotorDirection(Config.Drivetrain.FLMD)
-            .leftRearMotorDirection(Config.Drivetrain.FRMD)
-            .rightFrontMotorDirection(Config.Drivetrain.FRMD)
-            .rightRearMotorDirection(Config.Drivetrain.FRMD)
+            .leftFrontMotorDirection(Config.DrivetrainConstants.FLMD)
+            .leftRearMotorDirection(Config.DrivetrainConstants.FRMD)
+            .rightFrontMotorDirection(Config.DrivetrainConstants.FRMD)
+            .rightRearMotorDirection(Config.DrivetrainConstants.FRMD)
             .useBrakeModeInTeleOp(true)
-            //TODO what is this
-            .yVelocity(55)
-            .xVelocity(68);
+
+            .xVelocity(61.60857721764272)
+            .yVelocity(48.005766469841905);
+
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-104)
@@ -53,6 +62,8 @@ public class Constants {
             .distanceUnit(DistanceUnit.MM)
             .hardwareMapName(DeviceRegistry.PINPOINT.str())
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
+
+            //TODO TEST DIRECTIONS
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 }

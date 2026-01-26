@@ -58,9 +58,11 @@ public class Utils {
                 "Pushing P (Program)",
                 "Its a terrible day for rain.",
                 "Victory is never decided by mobile suit performance alone, nor by the skill of " +
-                        "the pilot, alone. The result itself is only the truth!"
+                        "the pilot, alone. The result itself is only the truth!",
+                "Both parties, deposit your souls on Libra's scales.",
+                "Alea iacta est. The duel is approved."
         };
-        return catchphrases[rand.nextInt(catchphrases.length)]; //Grabs from a random position in the list
+        return catchphrases[rand.nextInt(catchphrases.length)]+"\n"; //Grabs from a random position in the list
     }
 
     /**

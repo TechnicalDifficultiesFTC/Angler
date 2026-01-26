@@ -1,23 +1,27 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.SwitchableLight;
+import com.seattlesolvers.solverslib.util.Timing;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
-import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 
 public class Indexer {
-    NormalizedColorSensor colorSensor;
     public DcMotor indexerMotor;
     public Servo indexerServo;
     private String indexingStatus = "Indexer is not active";
+    private DistanceSensor distanceSensor;
+    private boolean armInTheWay = false;
+    private boolean ballBlocked = false;
+    public boolean didAutoRecover = false;
+    public boolean indexerReversing = false;
     public Indexer(HardwareMap hardwareMap) {
         //Indexer Motor Setup
         indexerMotor = hardwareMap.dcMotor.get(DeviceRegistry.INDEXER_MOTOR.str());
@@ -28,16 +32,12 @@ public class Indexer {
         indexerServo = hardwareMap.servo.get(DeviceRegistry.INDEXER_SERVO.str());
         indexerServo.setDirection(Servo.Direction.FORWARD);
 
-        //Color Sensor
-        colorSensor = hardwareMap.get(NormalizedColorSensor.class, DeviceRegistry.COLOR_SENSOR.str());
+        //Distance Sensor
+        distanceSensor = hardwareMap.get(DistanceSensor.class, DeviceRegistry.DISTANCE_SENSOR.str());
     }
 
     public void setup() {
-        indexerServo.setPosition(Config.IndexerConstants.servoExpansionTicks);
-        //Ensure color sensor light is on
-        if (colorSensor instanceof SwitchableLight) {
-            ((SwitchableLight)colorSensor).enableLight(true);
-        }
+        moveServoOut();
     }
 
     public void processInput(Gamepad gamepad) {
@@ -45,11 +45,34 @@ public class Indexer {
         //Indexer main shaft
         if (gamepad.leftBumperWasPressed()) {
             indexerForward(1);
-            indexingStatus = "Indexing Forward";
-        } else if (gamepad.rightBumperWasPressed()) {
+            indexerReversing = false;
+            indexingStatus = "Indexing Forward (quickly)";
+        }
+
+        //Check to override automatic ball slowdown measures
+        boolean ballIsFalselyBlocked = (ballBlocked && !(ballHeld() && isArmInTheWay()));
+        if (ballIsFalselyBlocked && !indexerReversing) {
+            indexerForward(1);
+            ballBlocked = false;
+            indexingStatus = "Indexing Forward (quickly auto recovered)";
+            didAutoRecover = true;
+        }
+
+        //Check to see if indexer power needs to be slowed down to prevent a voltage stall
+        boolean ballIsInTheWay = ballHeld() && isArmInTheWay();
+        if (ballIsInTheWay && !indexerReversing ) { //Can only be run if no indexer reverse cmd
+            indexerForward(0.15);
+            ballBlocked = true;
+            indexingStatus = "Indexing Forward (slowly)";
+        }
+
+        if (gamepad.rightBumperWasPressed()) {
             indexerReverse();
+            indexerReversing = true;
             indexingStatus = "Indexing Backwards";
-        } else if (gamepad.bWasPressed()) {
+        }
+
+        if (gamepad.bWasPressed()) {
             indexerStop();
             indexingStatus = "Holding Indexer";
         }
@@ -62,6 +85,16 @@ public class Indexer {
         }
     }
 
+    /**
+     * @return If a ball is held in the indexer
+     */
+    public boolean ballHeld() {
+        return distanceSensor.getDistance(DistanceUnit.INCH) <
+                Config.IndexerConstants.DISTANCE_SENSOR_BALL_HELD_THRESHOLD_INCHES;
+    }
+    public double getDistanceReported() {
+        return distanceSensor.getDistance(DistanceUnit.INCH);
+    }
     public void indexerForward(double power) {
         indexerMotor.setPower(power);
     }
@@ -75,11 +108,33 @@ public class Indexer {
         return indexingStatus;
     }
 
+    /**
+     * Moves the servo to block balls
+     */
     public void moveServoIn() {
-        indexerServo.setPosition(Config.IndexerConstants.servoIncisionTicks);
+        armInTheWay = true;
+        indexerServo.setPosition(Config.IndexerConstants.SERVO_INCISION_TICKS);
     }
 
+    /**
+     * Moves the servo out of the way of balls
+     */
     public void moveServoOut() {
-        indexerServo.setPosition(Config.IndexerConstants.servoExpansionTicks);
+        armInTheWay = false;
+        indexerServo.setPosition(Config.IndexerConstants.SERVO_EXPANSION_TICKS);
+    }
+
+    public boolean isArmInTheWay() {
+        return armInTheWay;
+    }
+
+    public boolean isBallBlocked() {
+        return ballBlocked;
+    }
+
+    class ballTracker {
+        ballTracker() {
+            Timing.Timer timer = new Timing.Timer(500);
+        }
     }
 }

@@ -1,16 +1,13 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
@@ -48,12 +45,12 @@ public class MecanumDrivetrain {
         backRightMotor = hardwareMap.dcMotor.get(DeviceRegistry.BACK_RIGHT_MOTOR.str());
 
         //Front Motors
-        frontLeftMotor.setDirection(Config.Drivetrain.FLMD);
-        frontRightMotor.setDirection(Config.Drivetrain.FRMD);
+        frontLeftMotor.setDirection(Config.DrivetrainConstants.FLMD);
+        frontRightMotor.setDirection(Config.DrivetrainConstants.FRMD);
 
         //Back Motors
-        backLeftMotor.setDirection(Config.Drivetrain.BLMD);
-        backRightMotor.setDirection(Config.Drivetrain.BRMD);
+        backLeftMotor.setDirection(Config.DrivetrainConstants.BLMD);
+        backRightMotor.setDirection(Config.DrivetrainConstants.BRMD);
 
         //ZPM
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -86,7 +83,7 @@ public class MecanumDrivetrain {
             lowPowerMode = !lowPowerMode;
         }
 
-        modulator = lowPowerMode ? Config.Drivetrain.MIN_DT_SPEED : Config.Drivetrain.MAX_DT_SPEED;
+        modulator = lowPowerMode ? Config.DrivetrainConstants.MIN_DT_SPEED : Config.DrivetrainConstants.MAX_DT_SPEED;
 
         y = -gamepad.left_stick_y;
         x = gamepad.left_stick_x * 1.1;
@@ -122,15 +119,11 @@ public class MecanumDrivetrain {
             lowPowerMode = !lowPowerMode;
         }
 
-        modulator = lowPowerMode ? Config.Drivetrain.MIN_DT_SPEED : Config.Drivetrain.MAX_DT_SPEED;
+        modulator = lowPowerMode ? Config.DrivetrainConstants.MIN_DT_SPEED : Config.DrivetrainConstants.MAX_DT_SPEED;
 
         y = -gamepad.left_stick_y;
         x = gamepad.left_stick_x * 1.1;
         rx = gamepad.right_stick_x;
-
-        if (gamepad.options) {
-            imu.resetYaw();
-        }
 
         botHeading = pinpoint.getHeading(AngleUnit.RADIANS);
 
@@ -177,14 +170,14 @@ public class MecanumDrivetrain {
      * Check controller for pinpoint re-zeroing and update pinpoint
      */
     public void processInputPinpoint(Gamepad gamepad) {
-        if (gamepad.start) {
+        if (gamepad.optionsWasPressed()) {
             // You could use readings from April Tags here to give a new known position to the pinpoint
-            pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
+            pinpoint.setHeading(0,AngleUnit.RADIANS);
         }
         pinpoint.update();
     }
 
-    public void configurePinpoint() {
+    private void configurePinpoint() {
         /*
          *  Set the odometry pod positions relative to the point that you want the position to be measured from.
          *
@@ -213,6 +206,10 @@ public class MecanumDrivetrain {
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
+        GoBildaPinpointDriver.EncoderDirection xPodDirection = GoBildaPinpointDriver.EncoderDirection.FORWARD;
+        GoBildaPinpointDriver.EncoderDirection yPodDirection = GoBildaPinpointDriver.EncoderDirection.REVERSED;
+        pinpoint.setEncoderDirections(xPodDirection, yPodDirection);
+
         /*
          * Before running the robot, recalibrate the IMU. This needs to happen when the robot is stationary
          * The IMU will automatically calibrate when first powered on, but recalibrating before running
@@ -222,6 +219,7 @@ public class MecanumDrivetrain {
          * an incorrect starting value for x, y, and heading.
          */
         pinpoint.resetPosAndIMU();
+
     }
 
     public GoBildaPinpointDriver getPinpoint() {

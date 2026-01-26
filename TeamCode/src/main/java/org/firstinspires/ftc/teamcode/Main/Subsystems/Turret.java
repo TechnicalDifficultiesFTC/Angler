@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.control.PIDFController;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.seattlesolvers.solverslib.geometry.Translation2d;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
+import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -22,33 +26,40 @@ public class Turret {
 
     //You can't retrieve target velocities in run to position PID mode so we track it internally
     //here!
-    public double flywheelTargetVelocityAsRadians;
+    public double flywheelTargetVelocityAsRadians = 0;
     public static double turretOffsetY = 0;
     public static double turretOffsetX  = -2;
-    public boolean shooterRunning;
+    public boolean shooterRunning = false;
     public DcMotorEx turretMotor;
     public DcMotorEx flywheelMotor;
 
     //CRServo hoodServo;
     public Servo hoodServo;
 
-    public static double blueGoalX = 0;
-    public static double blueGoalY = 144;
-    public static double redGoalX  = 144;
-    public static double redGoalY  = 144;
-    public static int pos = 0;
+    public static double blueGoalX = Config.FieldPositions.blueGoalX;
+    public static double blueGoalY = Config.FieldPositions.blueGoalY;
+    public static double redGoalX  = Config.FieldPositions.redGoalX;
+    public static double redGoalY  = Config.FieldPositions.redGoalY;
+    public static int turretPosTicks = 0;
+    public static double distance;
+    public static InterpLUT speedsLUT;
+    public static InterpLUT hoodLUT;
 
 
     public Turret(HardwareMap hardwareMap) {
+        //Motor declaration
         flywheelMotor = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.FLYWHEEL_MOTOR.str());
         turretMotor = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.TURRET_MOTOR.str());
 
+        //Hood servo
         hoodServo = hardwareMap.servo.get(DeviceRegistry.HOOD_SERVO.str());
         hoodServo.setDirection(Servo.Direction.FORWARD);
 
-        flywheelMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        //Flywheel setup
+        flywheelMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         flywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flywheelMotor.setVelocityPIDFCoefficients(Config.TurretConstants.FlywheelPIDF.p,0,0,Config.TurretConstants.FlywheelPIDF.f);
 
         //Turret motor setup
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -56,13 +67,36 @@ public class Turret {
 
         //Zero turret motor encoder
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretMotor.setTargetPosition(0); //Avoid TargetPositionNotSetException by setting pos to 0
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        /*
+        Interpolated lookup table setup!
+        All inputs are in inches
+        Speed table outputs are in percentage of shooter speed
+        Hood table outputs are in servo ticks
+         */
+//        speedsLUT.add(24,80);
+//        speedsLUT.add(36,85);
+//
+//        hoodLUT.add(24,0);
+//        hoodLUT.add(36,.2);
+
+        //Construct ILUT's
+//        speedsLUT.createLUT();
+//        hoodLUT.createLUT();
     }
 
+    public void setup() {
+        setHoodAngle(0);
+    }
     /* AUTOMATIC HANDLING */
+    public void lockOnAsPosition(Pose botPose, boolean isBlue) {
+        setTurretRotationAsPosition(botPose, isBlue);
+        setFlywheelTargetVelocityAsPosition(botPose, isBlue);
+    }
 
-
-    public void handleTurretRotation (Pose botPose, boolean isBlue) {
+    public void setTurretRotationAsPosition(Pose botPose, boolean isBlue) {
         double heading = botPose.getHeading();
         double x = botPose.getX();
         double y = botPose.getY();
@@ -80,23 +114,22 @@ public class Turret {
 
         double turretAngle = angleToGoal + headingDeg - 90;
 
-        //TODO tune tSlope
-        //t slope = ticks/degs
+        //TODO test tslope
         int targetTicks = (int) (Config.TurretConstants.TICKSPERDEG * turretAngle);
 
         final int TURRET_MIN = (int) Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS;
         final int TURRET_MAX = (int) Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS;
 
         if (targetTicks > TURRET_MAX || targetTicks < TURRET_MIN) {
-            pos = 0;
+            turretPosTicks = 0;
         } else {
-            pos = targetTicks;
+            turretPosTicks = targetTicks;
         }
 
-        setTurretPosition(pos);
+        setTurretPositionAsTicks(turretPosTicks);
     }
 
-    public void handleFlywheelVelocity(Pose botPose, boolean isBlue) {
+    public void setFlywheelTargetVelocityAsPosition(Pose botPose, boolean isBlue) {
         // ---- Pick correct goal ----
         double goalX = isBlue ? blueGoalX : redGoalX;
         double goalY = isBlue ? blueGoalY : redGoalY;
@@ -104,16 +137,20 @@ public class Turret {
         double x = botPose.getX();
         double y = botPose.getY();
 
-        double distance = Math.hypot(goalX - x, goalY - y);
-        //double vel = (distance * fSlope + fIntercept);
+        distance = Math.hypot(goalX - x, goalY - y);
 
-        //flywheelMotor.setVelocity(vel);
+        setFlywheelTargetVelocityAsDistance(distance);
     }
 
-    public void setTurretPosition(int pos) {
-        //TODO Tune Power?? where did this come from lol
-        turretMotor.setPositionPIDFCoefficients(Config.TurretConstants.POWER);
-        turretMotor.setTargetPosition(pos);
+    public void setFlywheelTargetVelocityAsDistance(double distance) {
+        //double velocity = speedsLUT.get(distance);
+        double velocity = 0;
+        setFlywheelTargetVelocityAsRadians(velocity);
+    }
+
+    public void setTurretPositionAsTicks(int ticks) {
+        turretMotor.setPositionPIDFCoefficients(Config.TurretConstants.TurretPIDF.p);
+        turretMotor.setTargetPosition(ticks);
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         turretMotor.setPower(1);
     }

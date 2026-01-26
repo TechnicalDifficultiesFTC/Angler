@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
 
 @Configurable
-@TeleOp(name = "Servo Test", group = "Tuning")
+@TeleOp(name = "Servo Testing", group = "Testing/Sensors")
 public class ServoTest extends OpMode {
     Turret turret;
     Indexer indexer;

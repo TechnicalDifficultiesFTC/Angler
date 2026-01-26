@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
+
 @TeleOp(name="RC Mini", group="MiniModes")
 public class DrivetrainRobotCentricMini extends LinearOpMode {
     @Override
@@ -15,11 +17,11 @@ public class DrivetrainRobotCentricMini extends LinearOpMode {
         DcMotor frontRightMotor = hardwareMap.dcMotor.get("FRM");
         DcMotor backRightMotor = hardwareMap.dcMotor.get("BRM");
 
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontLeftMotor.setDirection(Config.DrivetrainConstants.FLMD);
+        frontRightMotor.setDirection(Config.DrivetrainConstants.FRMD);
 
-        backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeftMotor.setDirection(Config.DrivetrainConstants.BLMD);
+        backRightMotor.setDirection(Config.DrivetrainConstants.BRMD);
         double y,x,rx;
 
         waitForStart();

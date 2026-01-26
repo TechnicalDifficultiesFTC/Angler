@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 @Configurable
@@ -15,14 +16,14 @@ public class TurretFlywheelPIDFTuning extends OpMode {
     double curTargetVelocityAsRadians = 0;
     double curVelocityAsRadians;
     double error = 0;
-    double highVelocityAsPercent = 65;
-    double lowVelocityAsPercent = 30;
+    double highVelocityAsPercent = 100;
+    double lowVelocityAsPercent = 50;
     int stepIndex;
     double[] stepSizes = {10.0, 1.0, 0.1, 0.001, 0.0001};
-    double P = 0;
-    double I;
-    double D;
-    double F = 0;
+    double P = Config.TurretConstants.FlywheelPIDF.p;
+    double I = Config.TurretConstants.FlywheelPIDF.i;
+    double D = Config.TurretConstants.FlywheelPIDF.d;
+    double F = Config.TurretConstants.FlywheelPIDF.f;
     Turret turret;
     String MOTM;
     TelemetryManager panelsTelemetry;
@@ -65,6 +66,9 @@ public class TurretFlywheelPIDFTuning extends OpMode {
             P -= stepSizes[stepIndex];
         }
 
+        if (gamepad1.squareWasPressed()) {
+            curTargetVelocityAsRadians = 0;
+        }
 
         turret.flywheelMotor.setVelocityPIDFCoefficients(P,0,0,F);
         turret.setFlywheelTargetVelocityAsRadians(curTargetVelocityAsRadians);
@@ -74,10 +78,11 @@ public class TurretFlywheelPIDFTuning extends OpMode {
         error = curTargetVelocityAsRadians - curVelocityAsRadians;
 
         panelsTelemetry.addLine("MOTM: " + MOTM);
+        panelsTelemetry.addLine("");
         panelsTelemetry.addLine("Step Value: " + stepSizes[stepIndex]);
-        panelsTelemetry.addData("Error: ", error);
-        panelsTelemetry.addData("Setpoint: ", curTargetVelocityAsRadians);
-        panelsTelemetry.addData("Velocity: ", curVelocityAsRadians);
+        panelsTelemetry.addData("Error ", Utils.ras(Math.abs(error)));
+        panelsTelemetry.addData("Setpoint ", Utils.ras(curTargetVelocityAsRadians));
+        panelsTelemetry.addData("Velocity ", Utils.ras(curVelocityAsRadians));
 
         panelsTelemetry.addData("P", turret.flywheelMotor.getPIDFCoefficients
                 (DcMotor.RunMode.RUN_USING_ENCODER).p);

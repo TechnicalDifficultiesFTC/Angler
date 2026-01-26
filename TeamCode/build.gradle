@@ -20,11 +20,21 @@ android {
 
     compileSdk 35
     defaultConfig {
-        minSdk 24
+        applicationId 'com.qualcomm.ftcrobotcontroller'
+        minSdkVersion 24
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion 28
+        multiDexEnabled true
     }
 
     packagingOptions {
         jniLibs.useLegacyPackaging true
+    }
+}
+
+repositories {
+    maven {
+        url "https://repo.dairy.foundation/releases"
     }
 }
 
@@ -33,4 +43,6 @@ dependencies {
     implementation 'org.ftclib.ftclib:core:2.0.1'
     implementation 'com.google.firebase:firebase-crashlytics-buildtools:3.0.6'
     implementation 'com.bylazar:fullpanels:1.0.7'
+    implementation "org.solverslib:core:0.3.3" // core
+    implementation "org.solverslib:pedroPathing:0.3.3" // pedroPathing
 }
