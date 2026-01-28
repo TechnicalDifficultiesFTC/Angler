@@ -105,17 +105,17 @@ public class TurretAutoDistanceTuning extends OpMode {
         intake.processInput(gamepad1);
 
         telemetry.addLine("MOTM: " + MOTM);
-        telemetry.addLine("Shooter running? " + turret.shooterRunning);
-        telemetry.addLine("Shooter power: " + turret.flywheelMotor.getPower());
         telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(turret.hoodServo.getPosition()));
+        telemetry.addLine("Target percent: " + targetVelAsPercentage);
         telemetry.addLine();
+        telemetry.addLine("Ready?: " + (turret.getFlywheelReady() ? "OK" : "NO"));
+        telemetry.update();
+
+
         panelsTelemetry.addData("Target Vel (%)", Utils.ras(turret.getFlywheelTargetVelocityAsPercentage()));
         panelsTelemetry.addData("Setpoint (rads)", Utils.ras(turret.flywheelTargetVelocityAsRadians));
         panelsTelemetry.addData("Velocity (rads)", Utils.ras(turret.getFlywheelVelocityAsRadians()));
         panelsTelemetry.addData("Error", Math.abs(Utils.dist(turret.flywheelTargetVelocityAsRadians,turret.getFlywheelVelocityAsRadians())));
-        telemetry.addLine();
-        telemetry.addLine("Ready?: " + (turret.getFlywheelReady() ? "OK" : "NO"));
-        telemetry.update();
-        panelsTelemetry.update(telemetry);
+        panelsTelemetry.update();
     }
 }

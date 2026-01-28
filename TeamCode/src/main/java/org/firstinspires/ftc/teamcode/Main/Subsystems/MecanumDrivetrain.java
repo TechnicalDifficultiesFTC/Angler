@@ -108,7 +108,6 @@ public class MecanumDrivetrain {
      * Handle drivetrain logic and update motors as such
      * @param gamepad All input from gamepad (1)
      */
-    //TODO TESTME
     public void processInputFC(Gamepad gamepad) {
 
         runmode = "Field-Centric";

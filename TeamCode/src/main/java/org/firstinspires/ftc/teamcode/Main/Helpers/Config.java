@@ -24,8 +24,6 @@ public class Config {
         public static DcMotorSimple.Direction BRMD = DcMotorSimple.Direction.FORWARD;
 
         //Pedropathing
-
-        //TODO weigh
         public static double ROBOT_MASS_KGS = 32;
 
         public static Pose2D DEFAULT_POSE = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0);
@@ -46,9 +44,10 @@ public class Config {
         public static double TURRET_NEGATIVE_LIMIT_TICKS = -953;
         public static double TICKSPERDEG = (double) 790/90;
 
-        //Flywheel Things
-        public static double linearInterpolationSlope = 0;
-        public static double linearInterpolationIntercept = 0;
+        public static double MAX_ILUT_DIST = 113;
+        public static double MIN_ILUT_DIST = 24;
+        public static double DISTANCE_OFFSET = -26.463347; //TODO Tune me
+
         public static class FlywheelPIDF {
             public static double p = 185;
             public static double i = 0;
@@ -64,8 +63,8 @@ public class Config {
     public static class IndexerConstants {
         //These are positions to go to represented by servo ticks (0,1)
         public static double SERVO_INCISION_TICKS = .8;
-        public static double SERVO_EXPANSION_TICKS = .625;
-        //TODO: Tune
+        public static double SERVO_EXPANSION_TICKS = .625; //TODO recalibrate to minimize travel time
+
         public static double DISTANCE_SENSOR_BALL_HELD_THRESHOLD_INCHES = 2;
     }
 

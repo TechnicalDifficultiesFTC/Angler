@@ -27,8 +27,8 @@ public class Constants {
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1,0.0,0.01,0.6,0.0))
             .centripetalScaling(0.0005);
 
-    //TODO what is this
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+    //TODO look into breaking strength error during line test
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.5, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
@@ -62,8 +62,6 @@ public class Constants {
             .distanceUnit(DistanceUnit.MM)
             .hardwareMapName(DeviceRegistry.PINPOINT.str())
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-
-            //TODO TEST DIRECTIONS
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 }

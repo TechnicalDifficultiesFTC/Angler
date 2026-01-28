@@ -60,7 +60,8 @@ public class Utils {
                 "Victory is never decided by mobile suit performance alone, nor by the skill of " +
                         "the pilot, alone. The result itself is only the truth!",
                 "Both parties, deposit your souls on Libra's scales.",
-                "Alea iacta est. The duel is approved."
+                "Alea iacta est. The duel is approved.",
+                "Fix, Release!",
         };
         return catchphrases[rand.nextInt(catchphrases.length)]+"\n"; //Grabs from a random position in the list
     }
@@ -86,6 +87,14 @@ public class Utils {
 
     public static double velocityPercentToRadians(double percent) {
         return Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC * ((percent)*.01);
+    }
+
+    public static double turretDegreesToTicks(double degrees) {
+        return (int) (Config.TurretConstants.TICKSPERDEG * degrees);
+    }
+
+    public static double turretTicksToDegrees(double ticks) {
+        return (int) (ticks/Config.TurretConstants.TICKSPERDEG);
     }
 }
 

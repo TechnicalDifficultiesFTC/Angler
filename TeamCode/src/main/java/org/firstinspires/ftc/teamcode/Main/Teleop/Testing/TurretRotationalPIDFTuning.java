@@ -18,8 +18,6 @@ public class TurretRotationalPIDFTuning extends OpMode {
     public int posTarget = 0;
     public static int posFar = 1000;
     public static int posClose = -500;
-
-    //TODO tune
     double P = 20;
     double I = 0;
     double D = 0;
@@ -69,21 +67,23 @@ public class TurretRotationalPIDFTuning extends OpMode {
 //            D -= stepSizes[stepIndex];
 //        }
 
+        double actualPos = turret.getActualTurretPos();
+
         turret.setTurretPositionAsTicks(posTarget);
         turret.turretMotor.setPositionPIDFCoefficients(P);
 
         panelsTelemetry.addLine("MOTM: " + MOTM);
         panelsTelemetry.addLine("");
-        panelsTelemetry.addData("Position", turret.getActualTurretPos());
+        panelsTelemetry.addData("Position", actualPos);
         panelsTelemetry.addData("Positional Target", posTarget);
-        panelsTelemetry.addData("Error", Utils.ras(Math.abs((posTarget - turret.getActualTurretPos()))));
+        panelsTelemetry.addData("Error", Utils.ras(Math.abs((posTarget - actualPos))));
 
         panelsTelemetry.addLine("P: " + P);
 //        panelsTelemetry.addLine("D: " + D);
 //        panelsTelemetry.addLine("F: " + F);
 
         panelsTelemetry.addLine("Adjustment Value: " + stepSizes[stepIndex]);
-
+        panelsTelemetry.addLine("Degrees Traveled: " + Utils.turretTicksToDegrees(actualPos));
         panelsTelemetry.update(telemetry);
 
     }

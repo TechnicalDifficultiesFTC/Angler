@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.util.Timing;
 
@@ -37,7 +35,7 @@ public class Indexer {
     }
 
     public void setup() {
-        moveServoOut();
+        moveArmOut();
     }
 
     public void processInput(Gamepad gamepad) {
@@ -79,9 +77,9 @@ public class Indexer {
 
         //Arm servo
         if (gamepad.dpadRightWasPressed()) {
-            moveServoIn();
+            moveArmIn();
         } else if (gamepad.dpadLeftWasPressed()) {
-            moveServoOut();
+            moveArmOut();
         }
     }
 
@@ -111,7 +109,7 @@ public class Indexer {
     /**
      * Moves the servo to block balls
      */
-    public void moveServoIn() {
+    public void moveArmIn() {
         armInTheWay = true;
         indexerServo.setPosition(Config.IndexerConstants.SERVO_INCISION_TICKS);
     }
@@ -119,7 +117,7 @@ public class Indexer {
     /**
      * Moves the servo out of the way of balls
      */
-    public void moveServoOut() {
+    public void moveArmOut() {
         armInTheWay = false;
         indexerServo.setPosition(Config.IndexerConstants.SERVO_EXPANSION_TICKS);
     }

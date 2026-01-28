@@ -1,16 +1,14 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.control.PIDFController;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.seattlesolvers.solverslib.geometry.Translation2d;
-import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -40,7 +38,6 @@ public class Turret {
     public static double blueGoalY = Config.FieldPositions.blueGoalY;
     public static double redGoalX  = Config.FieldPositions.redGoalX;
     public static double redGoalY  = Config.FieldPositions.redGoalY;
-    public static int turretPosTicks = 0;
     public static double distance;
     public static InterpLUT speedsLUT;
     public static InterpLUT hoodLUT;
@@ -70,26 +67,42 @@ public class Turret {
         turretMotor.setTargetPosition(0); //Avoid TargetPositionNotSetException by setting pos to 0
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        constructILUTs();
+    }
+
+    public void constructILUTs() {
         /*
         Interpolated lookup table setup!
         All inputs are in inches
         Speed table outputs are in percentage of shooter speed
         Hood table outputs are in servo ticks
          */
-//        speedsLUT.add(24,80);
-//        speedsLUT.add(36,85);
-//
-//        hoodLUT.add(24,0);
-//        hoodLUT.add(36,.2);
+        speedsLUT = new InterpLUT();
+        hoodLUT = new InterpLUT();
+
+        speedsLUT.add(24,80);
+        speedsLUT.add(36,85);
+        speedsLUT.add(48,90);
+        speedsLUT.add(60,90);
+        speedsLUT.add(72,95);
+        speedsLUT.add(80,100);
+
+        hoodLUT.add(24,0);
+        hoodLUT.add(36,.2);
+        hoodLUT.add(48,.4);
+        hoodLUT.add(60,.45);
+        hoodLUT.add(72,.45);
+        hoodLUT.add(80,.5);
+
 
         //Construct ILUT's
-//        speedsLUT.createLUT();
-//        hoodLUT.createLUT();
+        speedsLUT.createLUT();
+        hoodLUT.createLUT();
     }
-
     public void setup() {
         setHoodAngle(0);
     }
+
     /* AUTOMATIC HANDLING */
     public void lockOnAsPosition(Pose botPose, boolean isBlue) {
         setTurretRotationAsPosition(botPose, isBlue);
@@ -114,19 +127,8 @@ public class Turret {
 
         double turretAngle = angleToGoal + headingDeg - 90;
 
-        //TODO test tslope
-        int targetTicks = (int) (Config.TurretConstants.TICKSPERDEG * turretAngle);
-
-        final int TURRET_MIN = (int) Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS;
-        final int TURRET_MAX = (int) Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS;
-
-        if (targetTicks > TURRET_MAX || targetTicks < TURRET_MIN) {
-            turretPosTicks = 0;
-        } else {
-            turretPosTicks = targetTicks;
-        }
-
-        setTurretPositionAsTicks(turretPosTicks);
+        int turretTargetPosTicks = getTurretTicksAsDegrees(turretAngle);
+        setTurretPositionAsTicks(turretTargetPosTicks);
     }
 
     public void setFlywheelTargetVelocityAsPosition(Pose botPose, boolean isBlue) {
@@ -140,6 +142,17 @@ public class Turret {
         distance = Math.hypot(goalX - x, goalY - y);
 
         setFlywheelTargetVelocityAsDistance(distance);
+    }
+    public double getEstimatedDistanceToGoal(Pose botPose, boolean isBlue) {
+        double goalX = isBlue ? blueGoalX : redGoalX;
+        double goalY = isBlue ? blueGoalY : redGoalY;
+
+        double x = botPose.getX();
+        double y = botPose.getY();
+
+        //true distance - offset so that we get the distance from the front of the robot
+        distance = (Math.hypot(goalX - x, goalY - y)) + Config.TurretConstants.DISTANCE_OFFSET;
+        return distance;
     }
 
     public void setFlywheelTargetVelocityAsDistance(double distance) {
@@ -184,14 +197,37 @@ public class Turret {
         flywheelMotor.setPower(0);
     }
 
+
     /* GETTERS!! */
 
-    public double getFlywheelPower() {
-        return flywheelMotor.getPower();
+    public int getTurretTicksAsDegrees(double degrees) {
+        //TODO test tslope
+        int targetTicks = (int) (Config.TurretConstants.TICKSPERDEG * degrees);
+
+        final int TURRET_MIN = (int) Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS;
+        final int TURRET_MAX = (int) Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS;
+
+        if (targetTicks > TURRET_MAX || targetTicks < TURRET_MIN) {
+            return 0;
+        } else {
+            return targetTicks;
+        }
     }
-    public double getFlywheelAmps() {
-        return flywheelMotor.getCurrent(CurrentUnit.AMPS);
+
+    public double getSpeedILUTValue(double distance) {
+        distance = MathUtils.clamp(distance,Config.
+                        TurretConstants.MIN_ILUT_DIST,
+                Config.TurretConstants.MAX_ILUT_DIST);
+        return speedsLUT.get(distance);
     }
+
+    public double getHoodILUTValue(double distance) {
+        distance = MathUtils.clamp(distance,Config.
+                        TurretConstants.MIN_ILUT_DIST,
+                Config.TurretConstants.MAX_ILUT_DIST);
+        return speedsLUT.get(distance);
+    }
+
 
     /**
      * @return True if flywheel velocity is within an acceptable margin of error
@@ -202,6 +238,13 @@ public class Turret {
         double targetVel = getFlywheelTargetVelocityAsRadians();
         return Utils.dist(vel, targetVel) <= Config.TurretConstants.FLYWHEEL_ERROR_MARGIN_RADS;
     }
+
+    public boolean getTurretReady() {
+        double pos = turretMotor.getCurrentPosition();
+        double targetPos = getTurretTargetPos();
+        return Utils.dist(pos, targetPos) <= Config.TurretConstants.TURRET_ERROR_MARGIN_TICKS;
+    }
+
     /**
      * @return Percent of total velocity achieved
      */
@@ -222,10 +265,8 @@ public class Turret {
         return Utils.velocityRadiansToPercentage(getFlywheelTargetVelocityAsRadians());
     }
 
-    public boolean getTurretReady() {
-        double pos = turretMotor.getCurrentPosition();
-        double targetPos = getTurretTargetPos();
-        return Utils.dist(pos, targetPos) <= Config.TurretConstants.TURRET_ERROR_MARGIN_TICKS;
+    public boolean readyToFire() {
+        return getTurretReady() && getFlywheelReady();
     }
     public double getTurretTargetPos() {
         return turretMotor.getTargetPosition();
