@@ -20,8 +20,11 @@ public class Indexer {
     private boolean ballBlocked = false;
     public boolean didAutoRecover = false;
     public boolean indexerReversing = false;
-    public Indexer(HardwareMap hardwareMap) {
+    Turret turret;
+    public Indexer(HardwareMap hardwareMap, Turret turret) {
         //Indexer Motor Setup
+        this.turret = turret;
+
         indexerMotor = hardwareMap.dcMotor.get(DeviceRegistry.INDEXER_MOTOR.str());
         indexerMotor.setDirection(DcMotor.Direction.FORWARD);
         indexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -38,30 +41,13 @@ public class Indexer {
         moveArmOut();
     }
 
-    public void processInput(Gamepad gamepad) {
+    public void processInput(Gamepad gamepad, boolean shooterIdle) {
         //Controller handling x and y and b
         //Indexer main shaft
         if (gamepad.leftBumperWasPressed()) {
             indexerForward(1);
             indexerReversing = false;
             indexingStatus = "Indexing Forward (quickly)";
-        }
-
-        //Check to override automatic ball slowdown measures
-        boolean ballIsFalselyBlocked = (ballBlocked && !(ballHeld() && isArmInTheWay()));
-        if (ballIsFalselyBlocked && !indexerReversing) {
-            indexerForward(1);
-            ballBlocked = false;
-            indexingStatus = "Indexing Forward (quickly auto recovered)";
-            didAutoRecover = true;
-        }
-
-        //Check to see if indexer power needs to be slowed down to prevent a voltage stall
-        boolean ballIsInTheWay = ballHeld() && isArmInTheWay();
-        if (ballIsInTheWay && !indexerReversing ) { //Can only be run if no indexer reverse cmd
-            indexerForward(0.15);
-            ballBlocked = true;
-            indexingStatus = "Indexing Forward (slowly)";
         }
 
         if (gamepad.rightBumperWasPressed()) {
@@ -73,6 +59,26 @@ public class Indexer {
         if (gamepad.bWasPressed()) {
             indexerStop();
             indexingStatus = "Holding Indexer";
+        }
+
+        //Check to override automatic ball slowdown measures
+        boolean ballIsFalselyBlocked = (ballBlocked && !ballHeld());
+        if (ballIsFalselyBlocked && !indexerReversing) {
+            ballBlocked = false;
+            indexerForward(1);
+        }
+
+        else if (!turret.getFlywheelReady() && !shooterIdle) {
+            indexerForward(0);
+            indexingStatus = "Stopped because flywheel wasn't ready";
+        }
+
+        //Check to see if indexer power needs to be slowed down to prevent a voltage stall
+        boolean ballIsInTheWay = ballHeld() && isArmInTheWay();
+        if (ballIsInTheWay && !indexerReversing) { //Can only be run if no indexer reverse cmd
+            indexerForward(0.15);
+            ballBlocked = true;
+            indexingStatus = "Indexing Forward (slowly)";
         }
 
         //Arm servo

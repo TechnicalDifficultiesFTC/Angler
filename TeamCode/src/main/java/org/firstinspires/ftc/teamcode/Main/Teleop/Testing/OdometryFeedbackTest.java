@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
 
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -18,7 +19,7 @@ public class OdometryFeedbackTest extends OpMode {
 
     @Override
     public void init() {
-        drivetrain = new MecanumDrivetrain(hardwareMap);
+        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose());
         goBildaPinpointDriver = drivetrain.getPinpoint();
 
     }

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -15,8 +16,8 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
 
 @Configurable
-@TeleOp(name = "Turret Distance Tuning", group = "Tuning")
-public class TurretAutoDistanceTuning extends OpMode {
+@TeleOp(name = "Turret Manual Distance Calibration", group = "Manual Tests")
+public class TurretManualDistanceTuning extends OpMode {
     Turret turret;
     Indexer indexer;
     Intake intake;
@@ -26,7 +27,7 @@ public class TurretAutoDistanceTuning extends OpMode {
     TelemetryManager panelsTelemetry;
 
     int shooterStepIndex = 0;
-    double[] shooterStepSizes = {5,2.5,1,0.5};
+    double[] shooterStepSizes = {5,2.5,1,0.05};
 
     int hoodStepIndex = 0;
     double[] hoodStepSizes = {0.05,0.025,0.005};
@@ -37,9 +38,9 @@ public class TurretAutoDistanceTuning extends OpMode {
         MOTM = Utils.generateMOTM();
 
         turret = new Turret(hardwareMap);
-        indexer = new Indexer(hardwareMap);
+        indexer = new Indexer(hardwareMap, turret);
         intake = new Intake(hardwareMap);
-        drivetrain = new MecanumDrivetrain(hardwareMap);
+        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose());
 
         pinpointDriver = drivetrain.getPinpoint();
 
@@ -101,7 +102,7 @@ public class TurretAutoDistanceTuning extends OpMode {
         turret.setHoodAngle(hoodAngleTicks); //set hood
 
         //Other robot functions
-        indexer.processInput(gamepad1);
+        indexer.processInput(gamepad1,true);
         intake.processInput(gamepad1);
 
         telemetry.addLine("MOTM: " + MOTM);
@@ -109,6 +110,8 @@ public class TurretAutoDistanceTuning extends OpMode {
         telemetry.addLine("Target percent: " + targetVelAsPercentage);
         telemetry.addLine();
         telemetry.addLine("Ready?: " + (turret.getFlywheelReady() ? "OK" : "NO"));
+        telemetry.addLine("Indexer Motor Power?: " + indexer.indexerMotor.getPower());
+        telemetry.addLine("Indexer Status: " + indexer.getIndexingStatus());
         telemetry.update();
 
 

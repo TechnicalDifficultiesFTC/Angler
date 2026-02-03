@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
+package org.firstinspires.ftc.teamcode.Main.Teleop.DecoupledOpModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -12,9 +12,10 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
+
 @Configurable
-@TeleOp(name = "Turret Flywheel PIDF Tuning", group = "Tuning")
-public class TurretFlywheelPIDFTuning extends OpMode {
+@TeleOp(name = "Flywheel MAX Test", group = "Tuning")
+public class FlywheelMaxSpeed extends OpMode {
     double curTargetVelocityAsPercentage = 0;
     double error = 0;
     double highVelocityAsPercent = 200;
@@ -79,8 +80,8 @@ public class TurretFlywheelPIDFTuning extends OpMode {
             curTargetVelocityAsPercentage = 0;
         }
 
-        turret.flywheelMotor.setVelocityPIDFCoefficients(P,0,0,F);
-        turret.setFlywheelTargetVelocityAsPercentage(curTargetVelocityAsPercentage);
+        turret.flywheelMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        turret.flywheelMotor.setPower(1);
 
         double curVelocityAsPercentage = turret.getFlywheelVelocityAsPercentage();
         error = curTargetVelocityAsPercentage - turret.getFlywheelVelocityAsPercentage();

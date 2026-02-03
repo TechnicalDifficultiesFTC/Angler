@@ -89,12 +89,12 @@ public class Utils {
         return Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC * ((percent)*.01);
     }
 
-    public static double turretDegreesToTicks(double degrees) {
+    public static int turretDegreesToTicks(double degrees) {
         return (int) (Config.TurretConstants.TICKSPERDEG * degrees);
     }
 
     public static double turretTicksToDegrees(double ticks) {
-        return (int) (ticks/Config.TurretConstants.TICKSPERDEG);
+        return (ticks/Config.TurretConstants.TICKSPERDEG);
     }
 }
 

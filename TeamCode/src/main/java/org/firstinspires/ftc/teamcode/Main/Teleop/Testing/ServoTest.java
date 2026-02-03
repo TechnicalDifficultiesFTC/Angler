@@ -25,7 +25,7 @@ public class ServoTest extends OpMode {
         MOTM = Utils.generateMOTM();
 
         turret = new Turret(hardwareMap);
-        indexer = new Indexer(hardwareMap);
+        indexer = new Indexer(hardwareMap, turret);
         intake = new Intake(hardwareMap);
 
         telemetry.setMsTransmissionInterval(5);
@@ -54,18 +54,18 @@ public class ServoTest extends OpMode {
         }
 
         if (gamepad1.dpadUpWasPressed()) {
-            indexerServoPosition += .05;
+            indexerServoPosition += .005;
 
         }
         if (gamepad1.dpadDownWasPressed()) {
-            indexerServoPosition -= .05;
+            indexerServoPosition -= .005;
         }
 
         indexer.indexerServo.setPosition(indexerServoPosition);
         turret.hoodServo.setPosition(shooterServoPosition);
 
         //Other robot functions
-        indexer.processInput(gamepad2);
+        indexer.processInput(gamepad2,true);
         intake.processInput(gamepad2);
 
         telemetry.addLine("MOTM: " + MOTM);

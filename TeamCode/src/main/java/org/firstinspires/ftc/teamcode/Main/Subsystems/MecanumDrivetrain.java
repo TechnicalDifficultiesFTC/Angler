@@ -1,43 +1,39 @@
 package org.firstinspires.ftc.teamcode.Main.Subsystems;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 public class MecanumDrivetrain {
+    boolean lowPowerMode;
     public DcMotor frontLeftMotor;
     public DcMotor backLeftMotor;
     public DcMotor frontRightMotor;
     public DcMotor backRightMotor;
-
-    double y;
-    double x;
-    double rx;
-    double denominator;
-    double frontLeftPower;
-    double backLeftPower;
-    double frontRightPower;
-    double backRightPower;
-    boolean lowPowerMode;
-
-    public double botHeading;
-
-    double modulator;
+    double lowPowerModeFactor;
     public String error;
     public String runmode = "Null";
     public DcMotor.ZeroPowerBehavior currentZeroPowerBehavior;
     public GoBildaPinpointDriver pinpoint;
+    Follower follower;
+    Pose initialPose;
+    boolean isBlue;
 
-    IMU imu;
-    public MecanumDrivetrain(HardwareMap hardwareMap) {
+    public MecanumDrivetrain(HardwareMap hardwareMap, Pose initialPose, boolean isBlue) {
+        this.initialPose = initialPose;
+        this.isBlue = isBlue;
+
         /* Motors */
         frontLeftMotor = hardwareMap.dcMotor.get(DeviceRegistry.FRONT_LEFT_MOTOR.str());
         backLeftMotor = hardwareMap.dcMotor.get(DeviceRegistry.BACK_LEFT_MOTOR.str());
@@ -58,6 +54,12 @@ public class MecanumDrivetrain {
         /* Pinpoint */
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, DeviceRegistry.PINPOINT.str());
         configurePinpoint();
+
+        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, initialPose.getX(),initialPose.getY(),
+                AngleUnit.DEGREES, initialPose.getHeading()));
+
+        follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(initialPose);
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
@@ -75,26 +77,27 @@ public class MecanumDrivetrain {
      * @param gamepad All input from gamepad (1)
      */
     public void processInputRC(Gamepad gamepad){
+
         runmode = "Robot-Centric";
 
-        processInputPinpoint(gamepad);
+        update();
 
         if (gamepad.aWasPressed()) {
             lowPowerMode = !lowPowerMode;
         }
 
-        modulator = lowPowerMode ? Config.DrivetrainConstants.MIN_DT_SPEED : Config.DrivetrainConstants.MAX_DT_SPEED;
+        lowPowerModeFactor = lowPowerMode ? Config.DrivetrainConstants.MIN_DT_SPEED : Config.DrivetrainConstants.MAX_DT_SPEED;
 
-        y = -gamepad.left_stick_y;
-        x = gamepad.left_stick_x * 1.1;
-        rx = gamepad.right_stick_x;
+        double y = -gamepad.left_stick_y;
+        double x = gamepad.left_stick_x * 1.1;
+        double rx = gamepad.right_stick_x;
 
-        denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
-        frontLeftPower = ((y + x + rx)/denominator)*modulator;
-        frontRightPower = ((y - x - rx)/denominator)*modulator;
-        backLeftPower = ((y - x + rx)/denominator)*modulator;
-        backRightPower = ((y + x - rx)/denominator)*modulator;
+        double frontLeftPower = ((y + x + rx)/denominator)* lowPowerModeFactor;
+        double frontRightPower = ((y - x - rx)/denominator)* lowPowerModeFactor;
+        double backLeftPower = ((y - x + rx)/denominator)* lowPowerModeFactor;
+        double backRightPower = ((y + x - rx)/denominator)* lowPowerModeFactor;
 
         frontLeftMotor.setPower(frontLeftPower);
         backLeftMotor.setPower(backLeftPower);
@@ -112,19 +115,22 @@ public class MecanumDrivetrain {
 
         runmode = "Field-Centric";
 
-        processInputPinpoint(gamepad);
-
         if (gamepad.aWasPressed()) {
             lowPowerMode = !lowPowerMode;
         }
 
-        modulator = lowPowerMode ? Config.DrivetrainConstants.MIN_DT_SPEED : Config.DrivetrainConstants.MAX_DT_SPEED;
+        if (gamepad.optionsWasPressed()) {
+            pinpoint.setHeading(0,AngleUnit.DEGREES);
+        }
 
-        y = -gamepad.left_stick_y;
-        x = gamepad.left_stick_x * 1.1;
-        rx = gamepad.right_stick_x;
 
-        botHeading = pinpoint.getHeading(AngleUnit.RADIANS);
+        lowPowerModeFactor = lowPowerMode ? Config.DrivetrainConstants.MIN_DT_SPEED : Config.DrivetrainConstants.MAX_DT_SPEED;
+
+        double y = -gamepad.left_stick_y;
+        double x = gamepad.left_stick_x * 1.1;
+        double rx = gamepad.right_stick_x;
+
+        double botHeading = pinpoint.getHeading(AngleUnit.RADIANS);
 
         //Rotate the movement direction counter to the bot's rotation
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
@@ -133,17 +139,16 @@ public class MecanumDrivetrain {
         rotX = rotX * 1.1;  // Counteract imperfect strafing
 
         double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-        double frontLeftPower = ((rotY + rotX + rx) / denominator)*modulator;
-        double backLeftPower = ((rotY - rotX + rx) / denominator)*modulator;
-        double frontRightPower = ((rotY - rotX - rx) / denominator)*modulator;
-        double backRightPower = ((rotY + rotX - rx) / denominator)*modulator;
+        double frontLeftPower = ((rotY + rotX + rx) / denominator)* lowPowerModeFactor;
+        double backLeftPower = ((rotY - rotX + rx) / denominator)* lowPowerModeFactor;
+        double frontRightPower = ((rotY - rotX - rx) / denominator)* lowPowerModeFactor;
+        double backRightPower = ((rotY + rotX - rx) / denominator)* lowPowerModeFactor;
 
         frontLeftMotor.setPower(frontLeftPower);
         backLeftMotor.setPower(backLeftPower);
         frontRightMotor.setPower(frontRightPower);
         backRightMotor.setPower(backRightPower);
     }
-
     /* DEAD RECKONING CMDS */
     public void goForward(double pow,double actionLen) {
         frontLeftMotor.setPower(pow);
@@ -162,20 +167,22 @@ public class MecanumDrivetrain {
     public boolean isLowPowerMode() {
         return lowPowerMode;
     }
-
-    /* PINPOINT */
+    /* PINPOINT & FOLLOWER */
 
     /**
-     * Check controller for pinpoint re-zeroing and update pinpoint
+     * Update follower but not pinpoint
      */
-    public void processInputPinpoint(Gamepad gamepad) {
-        if (gamepad.optionsWasPressed()) {
-            // You could use readings from April Tags here to give a new known position to the pinpoint
-            pinpoint.setHeading(0,AngleUnit.RADIANS);
-        }
-        pinpoint.update();
+    public void update() {
+        follower.update();
+        //pinpoint.update();
     }
-
+    public Follower getFollower() {
+        return follower;
+    }
+    public Pose getPose() {
+        update();
+        return follower.getPose();
+    }
     private void configurePinpoint() {
         /*
          *  Set the odometry pod positions relative to the point that you want the position to be measured from.
@@ -219,9 +226,26 @@ public class MecanumDrivetrain {
          */
         pinpoint.resetPosAndIMU();
 
-    }
 
+    }
     public GoBildaPinpointDriver getPinpoint() {
         return pinpoint;
     }
+    public double getEstimatedDistanceToGoal() {
+        Pose botPose = getPose();
+        double blueGoalX = Config.FieldPositions.blueGoalX;
+        double blueGoalY = Config.FieldPositions.blueGoalY;
+        double redGoalX  = Config.FieldPositions.redGoalX;
+        double redGoalY  = Config.FieldPositions.redGoalY;
+
+        double goalX = isBlue ? blueGoalX : redGoalX;
+        double goalY = isBlue ? blueGoalY : redGoalY;
+
+        double x = botPose.getX();
+        double y = botPose.getY();
+
+        //true distance + -offset so that we get the distance from the front of the robot
+        return (Math.hypot(goalX - x, goalY - y)) + Config.TurretConstants.DISTANCE_OFFSET;
+    }
+
 }

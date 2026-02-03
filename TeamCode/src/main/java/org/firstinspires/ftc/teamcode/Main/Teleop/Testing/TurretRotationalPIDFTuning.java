@@ -6,6 +6,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
@@ -16,8 +17,8 @@ public class TurretRotationalPIDFTuning extends OpMode {
     TelemetryManager panelsTelemetry;
     Turret turret;
     public int posTarget = 0;
-    public static int posFar = 1000;
-    public static int posClose = -500;
+    public static int posPositive = Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS;
+    public static int posNegative = Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS;
     double P = 20;
     double I = 0;
     double D = 0;
@@ -34,9 +35,9 @@ public class TurretRotationalPIDFTuning extends OpMode {
 
     public void loop() {
         if (gamepad1.triangleWasPressed()) {
-            if (posTarget == posClose) {
-                posTarget = posFar;
-            } else { posTarget = posClose; }
+            if (posTarget == posPositive) {
+                posTarget = posNegative;
+            } else { posTarget = posPositive; }
         }
 
         if (gamepad1.bWasPressed()) {

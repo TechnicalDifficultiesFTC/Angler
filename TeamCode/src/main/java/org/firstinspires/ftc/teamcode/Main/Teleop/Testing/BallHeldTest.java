@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -33,9 +34,9 @@ public class BallHeldTest extends OpMode {
         CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!
          */
 
-        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap); //Construct DT
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, new Pose()); //Construct DT
         intake = new Intake(hardwareMap); //Construct Intake
-        indexer = new Indexer(hardwareMap); //Construct Indexer
+        indexer = new Indexer(hardwareMap, turret); //Construct Indexer
         turret = new Turret(hardwareMap); //Construct Turret
 
         //Setup
@@ -57,7 +58,7 @@ public class BallHeldTest extends OpMode {
 
         //Subsystem calls
         mecanumDrivetrain.processInputFC(gamepad1); //DT
-        indexer.processInput(gamepad1); //Indexer
+        indexer.processInput(gamepad1,true); //Indexer
         intake.processInput(gamepad1); //Intake
 
 

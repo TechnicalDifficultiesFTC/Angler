@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Main.Autonomous.DecoupledOpModes;
 
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -30,7 +31,7 @@ public class Moveforward extends LinearOpMode {
     private void setup() {
         telemetry.addLine(MOTM);
         telemetry.update();
-        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap);
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap,new Pose());
     }
 }
 
