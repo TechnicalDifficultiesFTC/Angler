@@ -34,9 +34,9 @@ public class BallHeldTest extends OpMode {
         CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!
          */
 
-        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, new Pose()); //Construct DT
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, new Pose(), true); //Construct DT
         intake = new Intake(hardwareMap); //Construct Intake
-        indexer = new Indexer(hardwareMap, turret); //Construct Indexer
+        indexer = new Indexer(hardwareMap); //Construct Indexer
         turret = new Turret(hardwareMap); //Construct Turret
 
         //Setup

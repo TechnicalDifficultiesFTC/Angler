@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Drawing;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
@@ -19,7 +20,7 @@ public class OdometryFeedbackTest extends OpMode {
 
     @Override
     public void init() {
-        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose());
+        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(), Config.GlobalConstats.defaultIsBlueValue);
         goBildaPinpointDriver = drivetrain.getPinpoint();
 
     }

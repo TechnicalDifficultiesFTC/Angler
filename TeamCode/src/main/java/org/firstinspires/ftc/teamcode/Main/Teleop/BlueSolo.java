@@ -38,11 +38,11 @@ public class BlueSolo extends OpMode {
     boolean shooterIdle = true;
     @Override
     public void init() {
-        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, new Pose(initialFollowerPose.getX(),initialFollowerPose.getY(),0)); //Construct DT
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, new Pose(initialFollowerPose.getX(),initialFollowerPose.getY(),0),Config.GlobalConstats.defaultIsBlueValue); //Construct DT
 
         intake = new Intake(hardwareMap); //Construct Intake
         turret = new Turret(hardwareMap); //Construct Turret
-        indexer = new Indexer(hardwareMap, turret); //Construct Indexer
+        indexer = new Indexer(hardwareMap); //Construct Indexer
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(initialFollowerPose);
@@ -72,7 +72,7 @@ public class BlueSolo extends OpMode {
 
     public boolean shootCommand(boolean isBlue) {
         shooterIdle = false;
-        distance = turret.getEstimatedDistanceToGoal(follower.getPose(),isBlue);
+        distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
         double targetPercentage = turret.getSpeedILUTValue(distance);
         double targetHoodAngle = turret.getHoodILUTValue(distance);
 
@@ -146,10 +146,7 @@ public class BlueSolo extends OpMode {
         telemetry.addLine("Indexer Motor Power: " + indexer.indexerMotor.getPower());
         telemetry.addLine("Flywheel Ready?: " + turret.getFlywheelReady());
         telemetry.addLine("Shooter command incomplete?: " + shootCommandIncomplete);
-        panelsTelemetry.addLine("Estimated distance: " + Utils.ras(turret.getEstimatedDistanceToGoal(
-                follower.getPose()
-                ,isBlue))
-        );
+        panelsTelemetry.addLine("Estimated distance: " + Utils.ras(mecanumDrivetrain.getEstimatedDistanceToGoal()));
 
         //Telemetry update
         panelsTelemetry.update(telemetry);

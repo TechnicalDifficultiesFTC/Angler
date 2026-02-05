@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 
@@ -20,7 +21,7 @@ public class FieldCentricTest extends OpMode {
 
     @Override
     public void init() {
-        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose());
+        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(), Config.GlobalConstats.defaultIsBlueValue);
         goBildaPinpointDriver = drivetrain.getPinpoint();
         TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     }

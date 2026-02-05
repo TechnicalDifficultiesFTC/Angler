@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,8 +11,8 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
 
 @Configurable
-@TeleOp(name = "Servo Testing", group = "Testing/Sensors")
-public class ServoTest extends OpMode {
+@TeleOp(name = "Servo Indexer and Hood Test", group = "Testing/Sensors")
+public class ServoIndexerAndHoodTest extends OpMode {
     Turret turret;
     Indexer indexer;
     Intake intake;
@@ -25,7 +24,7 @@ public class ServoTest extends OpMode {
         MOTM = Utils.generateMOTM();
 
         turret = new Turret(hardwareMap);
-        indexer = new Indexer(hardwareMap, turret);
+        indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
 
         telemetry.setMsTransmissionInterval(5);

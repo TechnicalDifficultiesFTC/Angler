@@ -38,9 +38,9 @@ public class TurretManualDistanceTuning extends OpMode {
         MOTM = Utils.generateMOTM();
 
         turret = new Turret(hardwareMap);
-        indexer = new Indexer(hardwareMap, turret);
+        indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
-        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose());
+        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(),true);
 
         pinpointDriver = drivetrain.getPinpoint();
 

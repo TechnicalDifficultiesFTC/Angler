@@ -6,6 +6,7 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -15,7 +16,7 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-public class MecanumDrivetrain {
+public class MecanumDrivetrain extends SubsystemBase {
     boolean lowPowerMode;
     public DcMotor frontLeftMotor;
     public DcMotor backLeftMotor;
@@ -29,6 +30,14 @@ public class MecanumDrivetrain {
     Follower follower;
     Pose initialPose;
     boolean isBlue;
+
+    /**
+     * Update follower but not pinpoint
+     */
+    public void periodic() {
+        follower.update();
+        //pinpoint.update();
+    }
 
     public MecanumDrivetrain(HardwareMap hardwareMap, Pose initialPose, boolean isBlue) {
         this.initialPose = initialPose;
@@ -80,7 +89,7 @@ public class MecanumDrivetrain {
 
         runmode = "Robot-Centric";
 
-        update();
+        periodic();
 
         if (gamepad.aWasPressed()) {
             lowPowerMode = !lowPowerMode;
@@ -119,8 +128,12 @@ public class MecanumDrivetrain {
             lowPowerMode = !lowPowerMode;
         }
 
+        //re orient field centric
         if (gamepad.optionsWasPressed()) {
-            pinpoint.setHeading(0,AngleUnit.DEGREES);
+            //TODO look into posetracker offsets
+            Pose currentPose = follower.getPose();
+
+            follower.setPose(new Pose(currentPose.getX(),currentPose.getY(),0));
         }
 
 
@@ -130,7 +143,8 @@ public class MecanumDrivetrain {
         double x = gamepad.left_stick_x * 1.1;
         double rx = gamepad.right_stick_x;
 
-        double botHeading = pinpoint.getHeading(AngleUnit.RADIANS);
+        //In radians
+        double botHeading = follower.getHeading();
 
         //Rotate the movement direction counter to the bot's rotation
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
@@ -169,18 +183,11 @@ public class MecanumDrivetrain {
     }
     /* PINPOINT & FOLLOWER */
 
-    /**
-     * Update follower but not pinpoint
-     */
-    public void update() {
-        follower.update();
-        //pinpoint.update();
-    }
     public Follower getFollower() {
         return follower;
     }
     public Pose getPose() {
-        update();
+        periodic();
         return follower.getPose();
     }
     private void configurePinpoint() {

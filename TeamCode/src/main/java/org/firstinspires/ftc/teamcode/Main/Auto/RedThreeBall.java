@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -33,11 +34,12 @@ public class RedThreeBall extends OpMode {
     private boolean shootCommandIncomplete;
     private int shotsFired = 0;
     boolean isBlue = false;
-
+    MecanumDrivetrain mecanumDrivetrain;
     @Override
     public void init() {
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startPose, false);
         turret = new Turret(hardwareMap);
-        indexer = new Indexer(hardwareMap, turret);
+        indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
 
         pathTimer = new Timer();
@@ -77,7 +79,7 @@ public class RedThreeBall extends OpMode {
         panelsTelemetry.debug("Heading", Math.toDegrees(follower.getPose().getHeading()));
         panelsTelemetry.debug("Shooter command complete?: " + !shootCommandIncomplete);
         panelsTelemetry.debug("Shots Fired: " + shotsFired);
-        panelsTelemetry.debug("Shooter rec power?: " + turret.getSpeedILUTValue(turret.getEstimatedDistanceToGoal(follower.getPose(),false)));
+        panelsTelemetry.debug("Shooter rec power?: " + turret.getSpeedILUTValue(mecanumDrivetrain.getEstimatedDistanceToGoal()));
         panelsTelemetry.update(telemetry);
     }
 
@@ -131,7 +133,7 @@ public class RedThreeBall extends OpMode {
 
     }
     public boolean shootCommand() {
-        double distance = turret.getEstimatedDistanceToGoal(follower.getPose(),isBlue);
+        double distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
         double targetPercentage = turret.getSpeedILUTValue(distance);
         double targetHoodAngle = turret.getHoodILUTValue(distance);
 

@@ -51,7 +51,6 @@ public class TurretManualRotateTesting extends OpMode {
 //
 //        }
 
-        //TODO add the follower
         double actualPosTicks = turret.getActualTurretPos();
         turret.turretMotor.setPositionPIDFCoefficients(P);
 

@@ -21,9 +21,8 @@ public class Indexer {
     public boolean didAutoRecover = false;
     public boolean indexerReversing = false;
     Turret turret;
-    public Indexer(HardwareMap hardwareMap, Turret turret) {
+    public Indexer(HardwareMap hardwareMap) {
         //Indexer Motor Setup
-        this.turret = turret;
 
         indexerMotor = hardwareMap.dcMotor.get(DeviceRegistry.INDEXER_MOTOR.str());
         indexerMotor.setDirection(DcMotor.Direction.FORWARD);

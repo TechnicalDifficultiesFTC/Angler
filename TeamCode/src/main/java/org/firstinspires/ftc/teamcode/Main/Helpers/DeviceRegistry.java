@@ -15,6 +15,9 @@ public enum DeviceRegistry {
     //SERVOS
     HOOD_SERVO("hood"),
     INDEXER_SERVO("indexarm"),
+    TURRET_SERVO_ONE("ts1"),
+    TURRET_SERVO_TWO("ts2"),
+    TURRET_SERVO_THREE("ts3"),
 
     //IMU
     IMU("imu"),

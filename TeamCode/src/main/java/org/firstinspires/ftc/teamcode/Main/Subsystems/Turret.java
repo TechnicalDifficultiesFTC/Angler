@@ -8,6 +8,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
+import com.seattlesolvers.solverslib.hardware.motors.CRServoGroup;
+import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
@@ -65,7 +69,7 @@ public class Turret {
 
         constructILUTs();
     }
-
+    //TODO make a method that can determine if a ball has been fired by checking the inertia drop
     public void constructILUTs() {
         /*
         Interpolated lookup table setup!
@@ -217,4 +221,5 @@ public class Turret {
     public int getActualTurretPos() {
         return turretMotor.getCurrentPosition();
     }
+
 }

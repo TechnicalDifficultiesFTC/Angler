@@ -43,7 +43,7 @@ public class RedSolo extends OpMode {
 
         intake = new Intake(hardwareMap); //Construct Intake
         turret = new Turret(hardwareMap); //Construct Turret
-        indexer = new Indexer(hardwareMap, turret); //Construct Indexer
+        indexer = new Indexer(hardwareMap); //Construct Indexer
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(initialFollowerPose);
@@ -71,33 +71,6 @@ public class RedSolo extends OpMode {
         mecanumDrivetrain.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    /**
-     *
-     * @param isBlue If this is a blue opmode
-     * @return If the shooter command completed unsuccessfully
-     */
-    public boolean shootCommand(boolean isBlue) {
-        shooterIdle = false;
-        distance = turret.getEstimatedDistanceToGoal(follower.getPose(),isBlue);
-        double targetPercentage = turret.getSpeedILUTValue(distance);
-        double targetHoodAngle = turret.getHoodILUTValue(distance);
-
-        turret.setFlywheelTargetVelocityAsPercentage(targetPercentage);
-        turret.setHoodAngle(targetHoodAngle);
-
-        //Shoot if ready
-        if (turret.getFlywheelReady()) {
-            indexer.moveArmOut();
-            indexer.indexerForward(1);
-            return false;
-        }
-        else if (!turret.getFlywheelReady()) {
-            indexer.indexerForward(0);
-            return true;
-        }
-        return true;
-    }
-
     @Override
     public void loop() {
             double curVelocityAsRadians = turret.getFlywheelVelocityAsRadians();
@@ -108,7 +81,7 @@ public class RedSolo extends OpMode {
             indexer.processInput(gamepad1, shooterIdle); //Indexer
             intake.processInput(gamepad1); //Intake
             mecanumDrivetrain.processInputRC(gamepad1);
-            mecanumDrivetrain.update(); //update follower and pinpoint
+            mecanumDrivetrain.periodic(); //update follower and pinpoint
 
             //Controls:
             if (gamepad1.dpadUpWasPressed()) {
@@ -121,9 +94,10 @@ public class RedSolo extends OpMode {
                 shooterIdle = true;
             }
 
-            if (gamepad1.yWasPressed() || shootCommandIncomplete) {
-                shootCommandIncomplete = shootCommand(isBlue);
-            }
+//            //Make the shooter command a thing here
+//            if (gamepad1.yWasPressed() || shootCommandIncomplete) {
+//                shootCommandIncomplete = shootCommand(isBlue);
+//            }
 
 
             //Follower
@@ -156,9 +130,7 @@ public class RedSolo extends OpMode {
             telemetry.addLine("Indexer Motor Power: " + indexer.indexerMotor.getPower());
             telemetry.addLine("Ready?: " + turret.getFlywheelReady());
             telemetry.addLine("Shooter command incomplete?: " + shootCommandIncomplete);
-            panelsTelemetry.addLine("Estimated distance: " + Utils.ras(turret.getEstimatedDistanceToGoal(
-                    follower.getPose()
-                    ,isBlue))
+            panelsTelemetry.addLine("Estimated distance: " + Utils.ras(mecanumDrivetrain.getEstimatedDistanceToGoal())
             );
 
             double x = Utils.rad(follower.getPose().getX(),2);

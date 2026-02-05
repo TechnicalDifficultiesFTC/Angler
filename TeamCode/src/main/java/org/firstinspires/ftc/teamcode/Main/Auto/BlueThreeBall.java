@@ -42,7 +42,7 @@ public class BlueThreeBall extends OpMode {
     public void init() {
 
         turret = new Turret(hardwareMap);
-        indexer = new Indexer(hardwareMap, turret);
+        indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
 
 

@@ -36,7 +36,7 @@ public class TurretFlywheelPIDFTuning extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         MOTM = Utils.generateMOTM();
         turret = new Turret(hardwareMap);
-        indexer = new Indexer(hardwareMap, turret);
+        indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
     }
 

@@ -12,6 +12,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
  * Holds static values
  */
 public class Config {
+    public static class GlobalConstats {
+        public static boolean defaultIsBlueValue = false; //For tests and stuff where we don't need to know if we're blue or not
+    }
     public static class AutoPoses {
         public static Pose blueAutoStartPose = new Pose(
                 27.611,131.935,Math.toRadians(145));
@@ -75,7 +78,7 @@ public class Config {
     public static class IndexerConstants {
         //These are positions to go to represented by servo ticks (0,1)
         public static double SERVO_INCISION_TICKS = .74;
-        public static double SERVO_EXPANSION_TICKS = .66; //TODO test recalibration
+        public static double SERVO_EXPANSION_TICKS = .66;
         public static double DISTANCE_SENSOR_BALL_HELD_THRESHOLD_INCHES = 2;
     }
 
