@@ -8,14 +8,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
-import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 
 @Configurable
 @TeleOp(name = "Turret Rotational PIDF Tuning", group = "Tuning")
 public class TurretRotationalPIDFTuning extends OpMode {
     TelemetryManager panelsTelemetry;
-    Turret turret;
+    Shooter shooter;
     public int posTarget = 0;
     public static int posPositive = Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS;
     public static int posNegative = Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS;
@@ -29,7 +29,7 @@ public class TurretRotationalPIDFTuning extends OpMode {
 
     public void init() {
         MOTM = Utils.generateMOTM();
-        turret = new Turret(hardwareMap);
+        shooter = new Shooter(hardwareMap);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 
@@ -68,23 +68,23 @@ public class TurretRotationalPIDFTuning extends OpMode {
 //            D -= stepSizes[stepIndex];
 //        }
 
-        double actualPos = turret.getActualTurretPos();
+        //double actualPos = shooter.getActualTurretPos();
 
-        turret.setTurretPositionAsTicks(posTarget);
-        turret.turretMotor.setPositionPIDFCoefficients(P);
+        //shooter.setTurretPositionAsTicks(posTarget);
+        //shooter.turretMotor.setPositionPIDFCoefficients(P);
 
         panelsTelemetry.addLine("MOTM: " + MOTM);
         panelsTelemetry.addLine("");
-        panelsTelemetry.addData("Position", actualPos);
+        //panelsTelemetry.addData("Position", actualPos);
         panelsTelemetry.addData("Positional Target", posTarget);
-        panelsTelemetry.addData("Error", Utils.ras(Math.abs((posTarget - actualPos))));
+        //panelsTelemetry.addData("Error", Utils.ras(Math.abs((posTarget - actualPos))));
 
         panelsTelemetry.addLine("P: " + P);
 //        panelsTelemetry.addLine("D: " + D);
 //        panelsTelemetry.addLine("F: " + F);
 
         panelsTelemetry.addLine("Adjustment Value: " + stepSizes[stepIndex]);
-        panelsTelemetry.addLine("Degrees Traveled: " + Utils.turretTicksToDegrees(actualPos));
+        //panelsTelemetry.addLine("Degrees Traveled: " + Utils.turretTicksToDegrees(actualPos));
         panelsTelemetry.update(telemetry);
 
     }

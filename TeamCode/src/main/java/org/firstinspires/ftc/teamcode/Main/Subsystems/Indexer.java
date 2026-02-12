@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 
@@ -20,7 +21,7 @@ public class Indexer {
     private boolean ballBlocked = false;
     public boolean didAutoRecover = false;
     public boolean indexerReversing = false;
-    Turret turret;
+    Shooter shooter;
     public Indexer(HardwareMap hardwareMap) {
         //Indexer Motor Setup
 
@@ -44,14 +45,12 @@ public class Indexer {
         //Controller handling x and y and b
         //Indexer main shaft
         if (gamepad.leftBumperWasPressed()) {
-            indexerForward(1);
-            indexerReversing = false;
+
             indexingStatus = "Indexing Forward (quickly)";
         }
 
         if (gamepad.rightBumperWasPressed()) {
             indexerReverse();
-            indexerReversing = true;
             indexingStatus = "Indexing Backwards";
         }
 
@@ -61,21 +60,21 @@ public class Indexer {
         }
 
         //Check to override automatic ball slowdown measures
-        boolean ballIsFalselyBlocked = (ballBlocked && !ballHeld());
+        boolean ballIsFalselyBlocked = (ballBlocked && !ballDetected());
         if (ballIsFalselyBlocked && !indexerReversing) {
             ballBlocked = false;
-            indexerForward(1);
+            setIndexerPower(1);
         }
 
-        else if (!turret.getFlywheelReady() && !shooterIdle) {
-            indexerForward(0);
+        else if (!shooter.isFlywheelReady() && !shooterIdle) {
+            setIndexerPower(0);
             indexingStatus = "Stopped because flywheel wasn't ready";
         }
 
         //Check to see if indexer power needs to be slowed down to prevent a voltage stall
-        boolean ballIsInTheWay = ballHeld() && isArmInTheWay();
+        boolean ballIsInTheWay = ballDetected() && isArmInTheWay();
         if (ballIsInTheWay && !indexerReversing) { //Can only be run if no indexer reverse cmd
-            indexerForward(0.15);
+            setIndexerPower(0.15);
             ballBlocked = true;
             indexingStatus = "Indexing Forward (slowly)";
         }
@@ -91,14 +90,14 @@ public class Indexer {
     /**
      * @return If a ball is held in the indexer
      */
-    public boolean ballHeld() {
+    public boolean ballDetected() {
         return distanceSensor.getDistance(DistanceUnit.INCH) <
                 Config.IndexerConstants.DISTANCE_SENSOR_BALL_HELD_THRESHOLD_INCHES;
     }
     public double getDistanceReported() {
         return distanceSensor.getDistance(DistanceUnit.INCH);
     }
-    public void indexerForward(double power) {
+    public void setIndexerPower(double power) {
         indexerMotor.setPower(power);
     }
     public void indexerReverse() {

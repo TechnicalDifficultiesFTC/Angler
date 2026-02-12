@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.Main.Helpers;
 
+import com.pedropathing.geometry.Pose;
+
 import java.util.Random;
 
 public class Utils {
-    public static double dist(double a, double b) {
+    public static double linearDist(double a, double b) {
         return Math.abs(a-b);
     }
     public static void halt(long millis) {
@@ -82,11 +84,11 @@ public class Utils {
      */
     public static double velocityRadiansToPercentage(double radians) {
         // Radians to percent
-        return (radians / Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC) * 100.0;
+        return (radians / Config.ShooterConstants.MAX_VELOCITY_RADIANS_PER_SEC) * 100.0;
     }
 
     public static double velocityPercentToRadians(double percent) {
-        return Config.TurretConstants.MAX_VELOCITY_RADIANS_PER_SEC * ((percent)*.01);
+        return Config.ShooterConstants.MAX_VELOCITY_RADIANS_PER_SEC * ((percent)*.01);
     }
 
     public static int turretDegreesToTicks(double degrees) {

@@ -47,9 +47,9 @@ public class Constants {
             .leftFrontMotorName(DeviceRegistry.FRONT_LEFT_MOTOR.str())
 
             .leftFrontMotorDirection(Config.DrivetrainConstants.FLMD)
-            .leftRearMotorDirection(Config.DrivetrainConstants.FRMD)
+            .leftRearMotorDirection(Config.DrivetrainConstants.BLMD)
             .rightFrontMotorDirection(Config.DrivetrainConstants.FRMD)
-            .rightRearMotorDirection(Config.DrivetrainConstants.FRMD)
+            .rightRearMotorDirection(Config.DrivetrainConstants.BRMD)
             .useBrakeModeInTeleOp(true)
 
             .xVelocity(61.60857721764272)

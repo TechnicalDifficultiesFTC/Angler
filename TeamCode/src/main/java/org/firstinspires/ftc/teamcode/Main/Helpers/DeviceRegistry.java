@@ -9,15 +9,18 @@ public enum DeviceRegistry {
     BACK_RIGHT_MOTOR("BRM"),
     INTAKE_MOTOR("intake"),
     INDEXER_MOTOR("indexer"),
-    FLYWHEEL_MOTOR("flywheel"),
-    TURRET_MOTOR("turret"),
+    FLYWHEEL_MOTOR_LEFT("flywheelLeft"),
+    FLYWHEEL_MOTOR_RIGHT("flywheelRight"),
+
+    //EXTERNAL ENCODERS
+    TURRET_ENCODER(FRONT_LEFT_MOTOR.str()), //inside is the motor where the encoder is attached
 
     //SERVOS
     HOOD_SERVO("hood"),
     INDEXER_SERVO("indexarm"),
-    TURRET_SERVO_ONE("ts1"),
-    TURRET_SERVO_TWO("ts2"),
-    TURRET_SERVO_THREE("ts3"),
+    TURRET_SERVO_FRONT("ts1"),
+    TURRET_SERVO_CENTER("ts2"),
+    TURRET_SERVO_REAR("ts3"),
 
     //IMU
     IMU("imu"),

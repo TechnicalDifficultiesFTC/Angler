@@ -45,24 +45,16 @@ public class Config {
     public static class ControllerConstants {
         public static double TRIGGER_THRESHOLD = 0.1;
     }
-    @Configurable
-    public static class TurretConstants {
+
+    public static class ShooterConstants {
         public static double FLYWHEEL_SPEED_HOVERING_PERCENTAGE = 30;
 
         public static double MAX_VELOCITY_RADIANS_PER_SEC = 3.563;
         //Error margins for the "ready!" info message
         public static double FLYWHEEL_ERROR_MARGIN_RADS = .15;
-        public static double TURRET_ERROR_MARGIN_TICKS = 75;
-
-        //Turret limits
-        public static int TURRET_POSITIVE_LIMIT_TICKS = 1151; //+180 degs
-        public static int TURRET_NEGATIVE_LIMIT_TICKS = -1151; //over -180 degs
-        public static double TICKSPERDEG = (double) 575/90;
-
         public static double MAX_ILUT_DIST = 101.5;
         public static double MIN_ILUT_DIST = 24;
         public static double DISTANCE_OFFSET = -26.463347; //TODO Tune me
-
         public static class FlywheelPIDF {
             public static double p = 185;
             public static double i = 0;
@@ -70,8 +62,34 @@ public class Config {
             public static double f = 16;
         }
 
+        //Used in the set hood angle command, to estimate when it'll be ready to shoot
+        //TODO TUNE ME
+        public static long TIME_TO_TRAVEL_POINT_ZERO_FIVE_ANGLE_MILLISECONDS = 10;
+
+        public static class ShooterTracker {
+            //TODO TUNE ME
+            public static double VELOCITY_DROP_THRESHOLD_PERCENTAGE = 5.0;
+            public static long BALL_FIRING_COOLDOWN_MS = 100;
+        }
+    }
+    @Configurable
+    public static class TurretConstants {
+        public static double TURRET_ERROR_MARGIN_TICKS = 75;
+
+        //Turret limits
+        public static int TURRET_POSITIVE_LIMIT_TICKS = 1151; //+180 degs
+        public static int TURRET_NEGATIVE_LIMIT_TICKS = -1151; //over -180 degs
+        public static double TICKSPERDEG = (double) 575/90;
+
         public static class TurretPIDF {
             public static double p = 21;
+            public static double f = 0; //TODO tune me
+        }
+        public static class TurretServoDirections {
+            public static boolean frontServoInverted = true;
+            public static boolean centerServoInverted = false;
+            public static boolean rearServoInverted = true;
+
         }
     }
 
@@ -80,6 +98,8 @@ public class Config {
         public static double SERVO_INCISION_TICKS = .74;
         public static double SERVO_EXPANSION_TICKS = .66;
         public static double DISTANCE_SENSOR_BALL_HELD_THRESHOLD_INCHES = 2;
+        //The amount of time indexer arm commands will wait for before terminating
+        public static long TRANSITION_TIME_MILLISECONDS = 50; //TODO TUNE ME
     }
 
     public static class FieldPositions {

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
+package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.LimitsTuning;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,9 +9,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
-import org.firstinspires.ftc.teamcode.Main.Commands.SpinupFlywheelCommand;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
-import org.slf4j.helpers.FormattingTuple;
 
 import java.util.ArrayList;
 
@@ -36,9 +34,9 @@ public class ServoTurretTest extends OpMode {
     //TODO test as a servo group
     @Override
     public void init() {
-        firstServo = new CRServoEx(hardwareMap, DeviceRegistry.TURRET_SERVO_ONE.str());
-        secondServo = new CRServoEx(hardwareMap, DeviceRegistry.TURRET_SERVO_TWO.str());
-        thirdServo = new CRServoEx(hardwareMap, DeviceRegistry.TURRET_SERVO_THREE.str());
+        firstServo = new CRServoEx(hardwareMap, DeviceRegistry.TURRET_SERVO_FRONT.str());
+        secondServo = new CRServoEx(hardwareMap, DeviceRegistry.TURRET_SERVO_CENTER.str());
+        thirdServo = new CRServoEx(hardwareMap, DeviceRegistry.TURRET_SERVO_REAR.str());
         telemetry.setMsTransmissionInterval(5);
 
         firstServo.setInverted(true);

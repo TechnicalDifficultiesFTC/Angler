@@ -8,13 +8,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
-import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 @Configurable
 @TeleOp(name = "Turret Manual Rotation Testing", group = "Manual Tests")
 public class TurretManualRotateTesting extends OpMode {
     TelemetryManager panelsTelemetry;
-    Turret turret;
+    Shooter shooter;
     public int posTarget = 0;
     public static int posFar = 1000;
     public static int posClose = -500;
@@ -26,15 +26,15 @@ public class TurretManualRotateTesting extends OpMode {
 
     public void init() {
         MOTM = Utils.generateMOTM();
-        turret = new Turret(hardwareMap);
+        shooter = new Shooter(hardwareMap);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         telemetry.setMsTransmissionInterval(5);
     }
 
     public void loop() {
-        if (gamepad1.triangleWasPressed()) {
-            turret.setTurretPositionAsTicks(Utils.turretDegreesToTicks(turret.normalizeAngleDegrees(targetDegrees)));
-        }
+        //if (gamepad1.triangleWasPressed()) {
+            //shooter.setTurretPositionAsTicks(Utils.turretDegreesToTicks(shooter.normalizeAngleDegrees(targetDegrees)));
+        //}
 
         if (gamepad1.bWasPressed()) {
             stepIndex = (stepIndex + 1) % stepSizes.length;
@@ -51,19 +51,19 @@ public class TurretManualRotateTesting extends OpMode {
 //
 //        }
 
-        double actualPosTicks = turret.getActualTurretPos();
-        turret.turretMotor.setPositionPIDFCoefficients(P);
+        //double actualPosTicks = shooter.getActualTurretPos();
+        //shooter.turretMotor.setPositionPIDFCoefficients(P);
 
         telemetry.addLine("MOTM: " + MOTM);
         telemetry.addLine("");
         telemetry.addLine("Adjustment Value: " + stepSizes[stepIndex]);
         telemetry.addLine();
         telemetry.addLine("Degrees Target: " + targetDegrees);
-        telemetry.addLine("Degrees Traveled: " + Utils.turretTicksToDegrees(actualPosTicks));
-        telemetry.addLine("Degrees Error: " + (targetDegrees - Utils.turretTicksToDegrees(actualPosTicks)));
+        //telemetry.addLine("Degrees Traveled: " + Utils.turretTicksToDegrees(actualPosTicks));
+        //telemetry.addLine("Degrees Error: " + (targetDegrees - Utils.turretTicksToDegrees(actualPosTicks)));
         telemetry.addLine();
-        telemetry.addLine("Actual ticks: " + actualPosTicks);
-        telemetry.addLine("Ticks error: " + (Utils.turretDegreesToTicks(targetDegrees) - actualPosTicks));
+        //telemetry.addLine("Actual ticks: " + actualPosTicks);
+        //telemetry.addLine("Ticks error: " + (Utils.turretDegreesToTicks(targetDegrees) - actualPosTicks));
         telemetry.addLine();
 
         telemetry.update();

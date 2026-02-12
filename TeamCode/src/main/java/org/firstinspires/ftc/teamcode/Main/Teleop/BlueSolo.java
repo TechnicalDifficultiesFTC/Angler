@@ -1,14 +1,13 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
@@ -17,8 +16,8 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Configurable
 @TeleOp(name="Blue Solo Static Shooter", group="!Solo")
@@ -28,12 +27,12 @@ public class BlueSolo extends OpMode {
     MecanumDrivetrain mecanumDrivetrain;
     Intake intake;
     Indexer indexer;
+    Shooter shooter;
     Turret turret;
     String MOTM = Utils.generateMOTM();
     TelemetryManager panelsTelemetry;
     boolean shootCommandIncomplete = false;
     boolean isBlue = true;
-    Follower follower;
     Pose initialFollowerPose = Config.AutoPoses.blueAutoEndPose;
     boolean shooterIdle = true;
     @Override
@@ -41,12 +40,10 @@ public class BlueSolo extends OpMode {
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, new Pose(initialFollowerPose.getX(),initialFollowerPose.getY(),0),Config.GlobalConstats.defaultIsBlueValue); //Construct DT
 
         intake = new Intake(hardwareMap); //Construct Intake
-        turret = new Turret(hardwareMap); //Construct Turret
+        shooter = new Shooter(hardwareMap); //Construct Turret
         indexer = new Indexer(hardwareMap); //Construct Indexer
+        turret = new Turret(hardwareMap); //Construct turret
 
-        follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(initialFollowerPose);
-        follower.update();
         //follower.startTeleOpDrive(true);
 
         Drawing.init();
@@ -64,38 +61,16 @@ public class BlueSolo extends OpMode {
 
     @Override
     public void start() {
-        turret.setup();
+        shooter.setup();
         indexer.setup();
         turret.setTurretPositionAsTicks(0);
         mecanumDrivetrain.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public boolean shootCommand(boolean isBlue) {
-        shooterIdle = false;
-        distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
-        double targetPercentage = turret.getSpeedILUTValue(distance);
-        double targetHoodAngle = turret.getHoodILUTValue(distance);
-
-        turret.setFlywheelTargetVelocityAsPercentage(targetPercentage);
-        turret.setHoodAngle(targetHoodAngle);
-
-        //Shoot if ready
-        if (turret.getFlywheelReady()) {
-            indexer.moveArmOut();
-            indexer.indexerForward(1);
-            return false;
-        }
-        else if (!turret.getFlywheelReady()) {
-            indexer.indexerForward(0);
-            return true;
-        }
-        return true;
-    }
-
     @Override
     public void loop() {
-        double curVelocityAsRadians = turret.getFlywheelVelocityAsRadians();
-        double curTargetVelocityAsRadians = turret.flywheelTargetVelocityAsRadians;
+        double curVelocityAsRadians = shooter.getFlywheelVelocityAsRadians();
+        double curTargetVelocityAsRadians = shooter.flywheelTargetVelocityAsRadians;
         double error = curTargetVelocityAsRadians - curVelocityAsRadians;
 
         //Subsystem calls
@@ -105,23 +80,21 @@ public class BlueSolo extends OpMode {
 
         //Controls:
         if (gamepad1.dpadUpWasPressed()) {
-            turret.setFlywheelTargetVelocityAsPercentage(30);
+            shooter.setFlywheelTargetVelocityAsPercentage(30);
             shooterIdle = true;
         }
 
         if (gamepad1.dpadDownWasPressed()) {
-            turret.setFlywheelTargetVelocityAsPercentage(0);
+            shooter.setFlywheelTargetVelocityAsPercentage(0);
             shooterIdle = true;
         }
 
         if (gamepad1.yWasPressed() || shootCommandIncomplete) {
-            shootCommandIncomplete = shootCommand(isBlue);
+            //shootCommandIncomplete = shootCommand(isBlue);
         }
 
 
 
-        //Follower
-        follower.update();
 
 //            follower.setTeleOpDrive(gamepad1.left_stick_x,
 //                    -gamepad1.left_stick_y,
@@ -130,21 +103,17 @@ public class BlueSolo extends OpMode {
 
         //turret.alignTurret(x,y,heading,false,telemetry);
 
-        //Drawing
-        Drawing.drawDebug(follower);
-        Drawing.sendPacket();
-
         /* TELEMETRY!!!!! */
         telemetry.addLine(MOTM);
 
         //Drivetrain
         telemetry.addLine("\nDT LPM: " + mecanumDrivetrain.isLowPowerMode());
-        telemetry.addLine("Heading: " + mecanumDrivetrain.getPinpoint().getHeading(AngleUnit.DEGREES));
+        telemetry.addLine("Heading: " + mecanumDrivetrain.getFollower().getPose().getHeading());
         //Indexer
-        telemetry.addLine("Speed rec: " + turret.getSpeedILUTValue(distance));
-        telemetry.addLine("Hood rec: " + turret.getHoodILUTValue(distance));
+        telemetry.addLine("Speed rec: " + shooter.getSpeedILUTValue(distance));
+        telemetry.addLine("Hood rec: " + shooter.getHoodILUTValue(distance));
         telemetry.addLine("Indexer Motor Power: " + indexer.indexerMotor.getPower());
-        telemetry.addLine("Flywheel Ready?: " + turret.getFlywheelReady());
+        telemetry.addLine("Flywheel Ready?: " + shooter.isFlywheelReady());
         telemetry.addLine("Shooter command incomplete?: " + shootCommandIncomplete);
         panelsTelemetry.addLine("Estimated distance: " + Utils.ras(mecanumDrivetrain.getEstimatedDistanceToGoal()));
 

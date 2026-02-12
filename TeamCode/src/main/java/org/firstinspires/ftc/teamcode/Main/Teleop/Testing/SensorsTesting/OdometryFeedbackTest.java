@@ -21,7 +21,6 @@ public class OdometryFeedbackTest extends OpMode {
     @Override
     public void init() {
         drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(), Config.GlobalConstats.defaultIsBlueValue);
-        goBildaPinpointDriver = drivetrain.getPinpoint();
 
     }
 

@@ -13,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
+import org.firstinspires.ftc.teamcode.Main.Helpers.Drawing;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -26,7 +27,6 @@ public class MecanumDrivetrain extends SubsystemBase {
     public String error;
     public String runmode = "Null";
     public DcMotor.ZeroPowerBehavior currentZeroPowerBehavior;
-    public GoBildaPinpointDriver pinpoint;
     Follower follower;
     Pose initialPose;
     boolean isBlue;
@@ -36,7 +36,7 @@ public class MecanumDrivetrain extends SubsystemBase {
      */
     public void periodic() {
         follower.update();
-        //pinpoint.update();
+        Drawing.drawDebug(follower);
     }
 
     public MecanumDrivetrain(HardwareMap hardwareMap, Pose initialPose, boolean isBlue) {
@@ -60,13 +60,7 @@ public class MecanumDrivetrain extends SubsystemBase {
         //ZPM
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        /* Pinpoint */
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, DeviceRegistry.PINPOINT.str());
-        configurePinpoint();
-
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, initialPose.getX(),initialPose.getY(),
-                AngleUnit.DEGREES, initialPose.getHeading()));
-
+        //Follower stuff
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(initialPose);
     }
@@ -190,53 +184,8 @@ public class MecanumDrivetrain extends SubsystemBase {
         periodic();
         return follower.getPose();
     }
-    private void configurePinpoint() {
-        /*
-         *  Set the odometry pod positions relative to the point that you want the position to be measured from.
-         *
-         *  The X pod offset refers to how far sideways from the tracking point the X (forward) odometry pod is.
-         *  Left of the center is a positive number, right of center is a negative number.
-         *
-         *  The Y pod offset refers to how far forwards from the tracking point the Y (strafe) odometry pod is.
-         *  Forward of center is a positive number, backwards is a negative number.
-         */
-        pinpoint.setOffsets(104, -104, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
-
-        /*
-         * Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
-         * the goBILDA_SWINGARM_POD, or the goBILDA_4_BAR_POD.
-         * If you're using another kind of odometry pod, uncomment setEncoderResolution and input the
-         * number of ticks per unit of your odometry pod.  For example:
-         *     pinpoint.setEncoderResolution(13.26291192, DistanceUnit.MM);
-         */
-        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-
-        /*
-         * Set the direction that each of the two odometry pods count. The X (forward) pod should
-         * increase when you move the robot forward. And the Y (strafe) pod should increase when
-         * you move the robot to the left.
-         */
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD);
-
-        GoBildaPinpointDriver.EncoderDirection xPodDirection = GoBildaPinpointDriver.EncoderDirection.FORWARD;
-        GoBildaPinpointDriver.EncoderDirection yPodDirection = GoBildaPinpointDriver.EncoderDirection.REVERSED;
-        pinpoint.setEncoderDirections(xPodDirection, yPodDirection);
-
-        /*
-         * Before running the robot, recalibrate the IMU. This needs to happen when the robot is stationary
-         * The IMU will automatically calibrate when first powered on, but recalibrating before running
-         * the robot is a good idea to ensure that the calibration is "good".
-         * resetPosAndIMU will reset the position to 0,0,0 and also recalibrate the IMU.
-         * This is recommended before you run your autonomous, as a bad initial calibration can cause
-         * an incorrect starting value for x, y, and heading.
-         */
-        pinpoint.resetPosAndIMU();
-
-
-    }
-    public GoBildaPinpointDriver getPinpoint() {
-        return pinpoint;
+    public boolean isBlue() {
+        return isBlue;
     }
     public double getEstimatedDistanceToGoal() {
         Pose botPose = getPose();
@@ -252,7 +201,7 @@ public class MecanumDrivetrain extends SubsystemBase {
         double y = botPose.getY();
 
         //true distance + -offset so that we get the distance from the front of the robot
-        return (Math.hypot(goalX - x, goalY - y)) + Config.TurretConstants.DISTANCE_OFFSET;
+        return (Math.hypot((goalX - x), (goalY - y))) + Config.ShooterConstants.DISTANCE_OFFSET;
     }
 
 }

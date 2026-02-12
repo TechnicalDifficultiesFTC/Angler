@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
-import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 @Configurable
 @TeleOp(name="Ball Held Test", group="Testing/Sensors")
@@ -22,7 +22,7 @@ public class BallHeldTest extends OpMode {
     MecanumDrivetrain mecanumDrivetrain;
     Intake intake;
     Indexer indexer;
-    Turret turret;
+    Shooter shooter;
     String MOTM = Utils.generateMOTM();
     TelemetryManager panelsTelemetry;
 
@@ -37,7 +37,7 @@ public class BallHeldTest extends OpMode {
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, new Pose(), true); //Construct DT
         intake = new Intake(hardwareMap); //Construct Intake
         indexer = new Indexer(hardwareMap); //Construct Indexer
-        turret = new Turret(hardwareMap); //Construct Turret
+        shooter = new Shooter(hardwareMap); //Construct Turret
 
         //Setup
         telemetry.setMsTransmissionInterval(5);
@@ -68,7 +68,7 @@ public class BallHeldTest extends OpMode {
 
         //Indexer
         telemetry.addLine("Indexer Status: " + indexer.getIndexingStatus());
-        telemetry.addLine("Ball Seen?: " + indexer.ballHeld());
+        telemetry.addLine("Ball Seen?: " + indexer.ballDetected());
         telemetry.addLine("Distance Reported: " + indexer.getDistanceReported());
         telemetry.addLine("Arm in the way?: " + indexer.isArmInTheWay());
         telemetry.addLine("Is Ball Blocked?: " + indexer.isBallBlocked());

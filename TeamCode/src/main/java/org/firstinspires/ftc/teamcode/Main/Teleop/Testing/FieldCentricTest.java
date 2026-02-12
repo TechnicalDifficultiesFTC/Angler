@@ -2,17 +2,17 @@ package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
-import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 
+@Disabled
 @TeleOp(name = "Field Centric Testing", group = "Testing/Systems")
 public class FieldCentricTest extends OpMode {
     GoBildaPinpointDriver goBildaPinpointDriver;
@@ -22,7 +22,6 @@ public class FieldCentricTest extends OpMode {
     @Override
     public void init() {
         drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(), Config.GlobalConstats.defaultIsBlueValue);
-        goBildaPinpointDriver = drivetrain.getPinpoint();
         TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 

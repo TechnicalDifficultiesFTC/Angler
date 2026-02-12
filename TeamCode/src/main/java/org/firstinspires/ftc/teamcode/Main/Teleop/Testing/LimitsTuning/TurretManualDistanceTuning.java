@@ -12,13 +12,13 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
-import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 
 @Configurable
 @TeleOp(name = "Turret Manual Distance Calibration", group = "Manual Tests")
 public class TurretManualDistanceTuning extends OpMode {
-    Turret turret;
+    Shooter shooter;
     Indexer indexer;
     Intake intake;
     double targetVelAsPercentage = 0;
@@ -37,12 +37,10 @@ public class TurretManualDistanceTuning extends OpMode {
     public void init() {
         MOTM = Utils.generateMOTM();
 
-        turret = new Turret(hardwareMap);
+        shooter = new Shooter(hardwareMap);
         indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
         drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(),true);
-
-        pinpointDriver = drivetrain.getPinpoint();
 
         telemetry.setMsTransmissionInterval(5);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -51,7 +49,7 @@ public class TurretManualDistanceTuning extends OpMode {
     @Override
     public void start() {
         indexer.setup();
-        turret.setup();
+        shooter.setup();
     }
 
     @Override
@@ -78,11 +76,11 @@ public class TurretManualDistanceTuning extends OpMode {
 
         if (gamepad1.dpadUpWasPressed()) {
             targetVelAsPercentage += shooterStepSizes[shooterStepIndex];
-            turret.setFlywheelTargetVelocityAsPercentage(targetVelAsPercentage); //set flywheel
+            shooter.setFlywheelTargetVelocityAsPercentage(targetVelAsPercentage); //set flywheel
         }
         if (gamepad1.dpadDownWasPressed()) {
             targetVelAsPercentage -= shooterStepSizes[shooterStepIndex];
-            turret.setFlywheelTargetVelocityAsPercentage(targetVelAsPercentage); //set flywheel
+            shooter.setFlywheelTargetVelocityAsPercentage(targetVelAsPercentage); //set flywheel
         }
 
         if (gamepad1.dpadRightWasPressed()) {
@@ -94,31 +92,31 @@ public class TurretManualDistanceTuning extends OpMode {
         }
 
         if (gamepad1.squareWasPressed()) {
-            turret.setFlywheelTargetVelocityAsPercentage(0);
+            shooter.setFlywheelTargetVelocityAsPercentage(0);
         }
 
         //Manual turret setting functions
 
-        turret.setHoodAngle(hoodAngleTicks); //set hood
+        shooter.setHoodAngle(hoodAngleTicks); //set hood
 
         //Other robot functions
         indexer.processInput(gamepad1,true);
         intake.processInput(gamepad1);
 
         telemetry.addLine("MOTM: " + MOTM);
-        telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(turret.hoodServo.getPosition()));
+        telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(shooter.hoodServo.getPosition()));
         telemetry.addLine("Target percent: " + targetVelAsPercentage);
         telemetry.addLine();
-        telemetry.addLine("Ready?: " + (turret.getFlywheelReady() ? "OK" : "NO"));
+        telemetry.addLine("Ready?: " + (shooter.isFlywheelReady() ? "OK" : "NO"));
         telemetry.addLine("Indexer Motor Power?: " + indexer.indexerMotor.getPower());
         telemetry.addLine("Indexer Status: " + indexer.getIndexingStatus());
         telemetry.update();
 
 
-        panelsTelemetry.addData("Target Vel (%)", Utils.ras(turret.getFlywheelTargetVelocityAsPercentage()));
-        panelsTelemetry.addData("Setpoint (rads)", Utils.ras(turret.flywheelTargetVelocityAsRadians));
-        panelsTelemetry.addData("Velocity (rads)", Utils.ras(turret.getFlywheelVelocityAsRadians()));
-        panelsTelemetry.addData("Error", Math.abs(Utils.dist(turret.flywheelTargetVelocityAsRadians,turret.getFlywheelVelocityAsRadians())));
+        panelsTelemetry.addData("Target Vel (%)", Utils.ras(shooter.getFlywheelTargetVelocityAsPercentage()));
+        panelsTelemetry.addData("Setpoint (rads)", Utils.ras(shooter.flywheelTargetVelocityAsRadians));
+        panelsTelemetry.addData("Velocity (rads)", Utils.ras(shooter.getFlywheelVelocityAsRadians()));
+        panelsTelemetry.addData("Error", Math.abs(Utils.linearDist(shooter.flywheelTargetVelocityAsRadians, shooter.getFlywheelVelocityAsRadians())));
         panelsTelemetry.update();
     }
 }

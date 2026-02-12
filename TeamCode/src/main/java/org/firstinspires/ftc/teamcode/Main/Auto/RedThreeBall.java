@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
-import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "Red 3 Ball", group = "!Autonomous")
@@ -28,7 +28,7 @@ public class RedThreeBall extends OpMode {
     private Paths paths; // Paths defined in the Paths class
     private Timer pathTimer, actionTimer, opmodeTimer;
     private final Pose startPose = Config.AutoPoses.redAutoStartPose;
-    private Turret turret;
+    private Shooter shooter;
     private Indexer indexer;
     private Intake intake;
     private boolean shootCommandIncomplete;
@@ -38,7 +38,7 @@ public class RedThreeBall extends OpMode {
     @Override
     public void init() {
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startPose, false);
-        turret = new Turret(hardwareMap);
+        shooter = new Shooter(hardwareMap);
         indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
 
@@ -59,10 +59,10 @@ public class RedThreeBall extends OpMode {
 
     @Override
     public void start() {
-        turret.setup();
+        shooter.setup();
         indexer.setup();
-        turret.setFlywheelTargetVelocityAsPercentage(
-                Config.TurretConstants.FLYWHEEL_SPEED_HOVERING_PERCENTAGE
+        shooter.setFlywheelTargetVelocityAsPercentage(
+                Config.ShooterConstants.FLYWHEEL_SPEED_HOVERING_PERCENTAGE
         );
         intake.intakeSpinup();
     }
@@ -79,7 +79,7 @@ public class RedThreeBall extends OpMode {
         panelsTelemetry.debug("Heading", Math.toDegrees(follower.getPose().getHeading()));
         panelsTelemetry.debug("Shooter command complete?: " + !shootCommandIncomplete);
         panelsTelemetry.debug("Shots Fired: " + shotsFired);
-        panelsTelemetry.debug("Shooter rec power?: " + turret.getSpeedILUTValue(mecanumDrivetrain.getEstimatedDistanceToGoal()));
+        panelsTelemetry.debug("Shooter rec power?: " + shooter.getSpeedILUTValue(mecanumDrivetrain.getEstimatedDistanceToGoal()));
         panelsTelemetry.update(telemetry);
     }
 
@@ -134,20 +134,20 @@ public class RedThreeBall extends OpMode {
     }
     public boolean shootCommand() {
         double distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
-        double targetPercentage = turret.getSpeedILUTValue(distance);
-        double targetHoodAngle = turret.getHoodILUTValue(distance);
+        double targetPercentage = shooter.getSpeedILUTValue(distance);
+        double targetHoodAngle = shooter.getHoodILUTValue(distance);
 
-        turret.setFlywheelTargetVelocityAsPercentage(targetPercentage);
-        turret.setHoodAngle(targetHoodAngle);
+        shooter.setFlywheelTargetVelocityAsPercentage(targetPercentage);
+        shooter.setHoodAngle(targetHoodAngle);
 
         //Shoot if ready
-        if (turret.getFlywheelReady()) {
+        if (shooter.isFlywheelReady()) {
             indexer.moveArmOut();
-            indexer.indexerForward(1);
+            indexer.setIndexerPower(1);
             return false;
         }
-        else if (!turret.getFlywheelReady()) {
-            indexer.indexerForward(0);
+        else if (!shooter.isFlywheelReady()) {
+            indexer.setIndexerPower(0);
             return true;
         }
         return true;

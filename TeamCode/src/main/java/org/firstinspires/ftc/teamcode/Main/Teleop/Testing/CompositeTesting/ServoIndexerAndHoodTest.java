@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
+package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.CompositeTesting;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -7,13 +7,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
-import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 
 @Configurable
-@TeleOp(name = "Servo Indexer and Hood Test", group = "Testing/Sensors")
+@TeleOp(name = "Servo Indexer and Hood Test", group = "Testing/Composite")
 public class ServoIndexerAndHoodTest extends OpMode {
-    Turret turret;
+    Shooter shooter;
     Indexer indexer;
     Intake intake;
     double indexerServoPosition = 0;
@@ -23,7 +23,7 @@ public class ServoIndexerAndHoodTest extends OpMode {
     public void init() {
         MOTM = Utils.generateMOTM();
 
-        turret = new Turret(hardwareMap);
+        shooter = new Shooter(hardwareMap);
         indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
 
@@ -61,14 +61,14 @@ public class ServoIndexerAndHoodTest extends OpMode {
         }
 
         indexer.indexerServo.setPosition(indexerServoPosition);
-        turret.hoodServo.setPosition(shooterServoPosition);
+        shooter.hoodServo.setPosition(shooterServoPosition);
 
         //Other robot functions
         indexer.processInput(gamepad2,true);
         intake.processInput(gamepad2);
 
         telemetry.addLine("MOTM: " + MOTM);
-        telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(turret.hoodServo.getPosition()));
+        telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(shooter.hoodServo.getPosition()));
         telemetry.addLine("Indexer Servo Position (software ticks): " + Utils.ras(indexer.indexerServo.getPosition()));
     }
 }

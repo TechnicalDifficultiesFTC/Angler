@@ -6,18 +6,21 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.bylazar.telemetry.PanelsTelemetry;
 
+import org.firstinspires.ftc.teamcode.Main.Commands.Shooter.AngleHoodCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
+import org.firstinspires.ftc.teamcode.Main.Commands.Shooter.SpinupFlywheelCommand;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
-import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
-import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.geometry.Pose;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
 
 @Autonomous(name = "Blue 3 Ball", group = "!Autonomous")
 @Configurable // Panels
@@ -30,21 +33,19 @@ public class BlueThreeBall extends OpMode {
     private Paths paths; // Paths defined in the Paths class
     private Timer pathTimer, actionTimer, opmodeTimer;
     private final Pose startPose = Config.AutoPoses.blueAutoStartPose;
-    private Turret turret;
+    private Shooter shooter;
     private Indexer indexer;
     private Intake intake;
     private boolean shootCommandIncomplete;
     private boolean isBlue = true;
-    MecanumDrivetrain mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startPose, isBlue);
-
+    MecanumDrivetrain mecanumDrivetrain;
 
     @Override
     public void init() {
-
-        turret = new Turret(hardwareMap);
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startPose, isBlue);
+        shooter = new Shooter(hardwareMap);
         indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
-
 
         pathTimer = new Timer();
         opmodeTimer = new Timer();
@@ -52,6 +53,7 @@ public class BlueThreeBall extends OpMode {
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
+        follower = mecanumDrivetrain.getFollower();
         paths = new Paths(follower); // Build paths
 
         panelsTelemetry.debug("Status", "Initialized");
@@ -60,10 +62,10 @@ public class BlueThreeBall extends OpMode {
 
     @Override
     public void start() {
-        turret.setup();
+        shooter.setup();
         indexer.setup();
-        turret.setFlywheelTargetVelocityAsPercentage(
-                Config.TurretConstants.FLYWHEEL_SPEED_HOVERING_PERCENTAGE
+        shooter.setFlywheelTargetVelocityAsPercentage(
+                Config.ShooterConstants.FLYWHEEL_SPEED_HOVERING_PERCENTAGE
         );
     }
 
@@ -71,6 +73,7 @@ public class BlueThreeBall extends OpMode {
     public void loop() {
         follower.update(); // Update Pedro Pathing
         autonomousPathUpdate(); // Update autonomous state machine
+        CommandScheduler.getInstance().run();
 
         // Log values to Panels and Driver Station
         panelsTelemetry.debug("Path State", pathState);
@@ -78,7 +81,8 @@ public class BlueThreeBall extends OpMode {
         panelsTelemetry.debug("Y", follower.getPose().getY());
         panelsTelemetry.debug("Heading", Math.toDegrees(follower.getPose().getHeading()));
         panelsTelemetry.debug("Shooter command complete?: " + !shootCommandIncomplete);
-        panelsTelemetry.debug("Shooter rec power?: " + turret.getSpeedILUTValue(mecanumDrivetrain.getEstimatedDistanceToGoal()));
+        panelsTelemetry.debug("Shooter rec power?: " + shooter.getSpeedILUTValue(mecanumDrivetrain.getEstimatedDistanceToGoal()));
+        panelsTelemetry.debug(follower.getPoseTracker().debugString());
         panelsTelemetry.update(telemetry);
     }
 
@@ -115,43 +119,20 @@ public class BlueThreeBall extends OpMode {
                 break;
             case 1:
                 if(!follower.isBusy()) {
-                    indexer.moveArmOut();
-                    intake.intakeSpinup();
-                    for (shotsFired = 0; shotsFired < 3; ++shotsFired) {
-                        do {
-                            shootCommandIncomplete = shootCommand();
-                            Utils.halt(500);
-                            } while (shootCommandIncomplete);
-                        }
-                    Utils.halt(1000);
+                    new MoveIndexerArmInCommand(indexer);
+                    new UpdateIndexerState(indexer,intake,shooter);
+                    new SpinupFlywheelCommand(shooter, mecanumDrivetrain);
+                    new AngleHoodCommand(shooter,mecanumDrivetrain);
+
+                    //TODO add shoot cmd here
                     setPathState(2);
                 }
                 break;
             case 2:
-                turret.setFlywheelTargetVelocityAsPercentage(0);
+                shooter.setFlywheelTargetVelocityAsPercentage(0);
                 stop();
         }
 
-    }
-    public boolean shootCommand() {
-        double distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
-        double targetPercentage = turret.getSpeedILUTValue(distance);
-        double targetHoodAngle = turret.getHoodILUTValue(distance);
-
-        turret.setFlywheelTargetVelocityAsPercentage(targetPercentage);
-        turret.setHoodAngle(targetHoodAngle);
-
-        //Shoot if ready
-        if (turret.getFlywheelReady()) {
-            indexer.moveArmOut();
-            indexer.indexerForward(1);
-            return false;
-        }
-        else if (!turret.getFlywheelReady()) {
-            indexer.indexerForward(0);
-            return true;
-        }
-        return true;
     }
 
     @Override
