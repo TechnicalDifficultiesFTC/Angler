@@ -1,15 +1,14 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop;
+package org.firstinspires.ftc.teamcode.Main.Teleop.NonCMDOpModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.seattlesolvers.solverslib.command.CommandScheduler;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Drawing;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
@@ -19,6 +18,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
+@Disabled
 @Configurable
 @TeleOp(name="Blue Solo Static Shooter", group="!Solo")
 public class BlueSolo extends OpMode {
@@ -63,7 +63,7 @@ public class BlueSolo extends OpMode {
     public void start() {
         shooter.setup();
         indexer.setup();
-        turret.setTurretPositionAsTicks(0);
+        turret.setTurretPositionAsDegrees(0);
         mecanumDrivetrain.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 

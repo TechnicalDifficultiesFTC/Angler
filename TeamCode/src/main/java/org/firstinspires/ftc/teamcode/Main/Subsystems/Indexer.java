@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -12,16 +13,14 @@ import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 
-public class Indexer {
+public class Indexer extends SubsystemBase {
     public DcMotor indexerMotor;
     public Servo indexerServo;
     private String indexingStatus = "Indexer is not active";
     private DistanceSensor distanceSensor;
     private boolean armInTheWay = false;
     private boolean ballBlocked = false;
-    public boolean didAutoRecover = false;
     public boolean indexerReversing = false;
-    Shooter shooter;
     public Indexer(HardwareMap hardwareMap) {
         //Indexer Motor Setup
 
@@ -66,10 +65,10 @@ public class Indexer {
             setIndexerPower(1);
         }
 
-        else if (!shooter.isFlywheelReady() && !shooterIdle) {
-            setIndexerPower(0);
-            indexingStatus = "Stopped because flywheel wasn't ready";
-        }
+//        else if (!shooter.isFlywheelReady() && !shooterIdle) {
+//            setIndexerPower(0);
+//            indexingStatus = "Stopped because flywheel wasn't ready";
+//        }
 
         //Check to see if indexer power needs to be slowed down to prevent a voltage stall
         boolean ballIsInTheWay = ballDetected() && isArmInTheWay();

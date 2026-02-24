@@ -8,10 +8,12 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
+/**
+ * Changes flywheel and hood angle to align to goal
+ */
 public class PrimeShooter extends ParallelCommandGroup {
     //Im dependency injectioning all over the place!!! :)
-    public PrimeShooter(Shooter shooter,
-                        MecanumDrivetrain mecanumDrivetrain) {
+    public PrimeShooter(Shooter shooter, MecanumDrivetrain mecanumDrivetrain) {
         addCommands(
                 new SpinupFlywheelCommand(shooter, mecanumDrivetrain),
                 new AngleHoodCommand(shooter, mecanumDrivetrain)

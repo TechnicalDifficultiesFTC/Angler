@@ -18,6 +18,7 @@ public class MoveIndexerArmInCommand extends CommandBase {
             TimeUnit.MILLISECONDS);
     public MoveIndexerArmInCommand(Indexer indexer) {
         this.indexer = indexer;
+        //no requirements are specified here intentionally
     }
 
     public void initialize() {

@@ -73,6 +73,9 @@ public class MecanumDrivetrain extends SubsystemBase {
         currentZeroPowerBehavior = zeroPowerBehavior;
     }
 
+    public void setLowPowerMode(boolean lowPowerModeState) {
+        lowPowerMode = lowPowerModeState;
+    }
     /**
      * ROBOT-CENTRIC METHOD
      * -----------------------
@@ -84,10 +87,6 @@ public class MecanumDrivetrain extends SubsystemBase {
         runmode = "Robot-Centric";
 
         periodic();
-
-        if (gamepad.aWasPressed()) {
-            lowPowerMode = !lowPowerMode;
-        }
 
         lowPowerModeFactor = lowPowerMode ? Config.DrivetrainConstants.MIN_DT_SPEED : Config.DrivetrainConstants.MAX_DT_SPEED;
 
@@ -117,10 +116,6 @@ public class MecanumDrivetrain extends SubsystemBase {
     public void processInputFC(Gamepad gamepad) {
 
         runmode = "Field-Centric";
-
-        if (gamepad.aWasPressed()) {
-            lowPowerMode = !lowPowerMode;
-        }
 
         //re orient field centric
         if (gamepad.optionsWasPressed()) {

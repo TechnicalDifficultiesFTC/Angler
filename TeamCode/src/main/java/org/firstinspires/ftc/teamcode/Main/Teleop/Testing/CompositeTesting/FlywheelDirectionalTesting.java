@@ -52,13 +52,15 @@ public class FlywheelDirectionalTesting extends OpMode {
             flywheelMotors.setVelocityTarget(0);
         }
 
-
+        if (gamepad1.aWasPressed()) {
+            flywheelMotors.setVelocityTarget(Utils.velocityPercentToRadians(10));
+        }
         if (gamepad1.dpadRightWasPressed()) {
-            shooter.setFlywheelMotorLeftVelocityAsRadians(Utils.velocityPercentToRadians(curTargetVelocityAsPercentage));
+            shooter.flywheelMotorLeft.setVelocity(Utils.velocityPercentToRadians(curTargetVelocityAsPercentage));
         }
 
         if (gamepad1.dpadLeftWasPressed()) {
-            shooter.setFlywheelMotorRightVelocityAsRadians(Utils.velocityPercentToRadians(curTargetVelocityAsPercentage));
+            shooter.flywheelMotorRight.setVelocity(Utils.velocityPercentToRadians(curTargetVelocityAsPercentage));
         }
 
         double curVelocityAsPercentage = shooter.getFlywheelCurrentVelocityAsPercentage();

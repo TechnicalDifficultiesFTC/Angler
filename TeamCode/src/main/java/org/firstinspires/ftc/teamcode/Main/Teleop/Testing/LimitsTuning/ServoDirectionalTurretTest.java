@@ -9,12 +9,13 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
+import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 
 import java.util.ArrayList;
 
-@TeleOp(name = "Servo Turret Test", group = "Testing/Sensors")
-public class ServoTurretTest extends OpMode {
+@TeleOp(name = "Servo Directional Turret Test", group = "Turret Servo Stuff")
+public class ServoDirectionalTurretTest extends OpMode {
     GamepadEx gamepadEx;
     Button aButton;
     Button bButton;
@@ -24,11 +25,11 @@ public class ServoTurretTest extends OpMode {
     CRServoEx firstServo;
     CRServoEx secondServo;
     CRServoEx thirdServo;
+    CRServoEx[] CRServoArr;
     InstantCommand StopServosCommand = new InstantCommand(() -> {
         firstServo.stop(); secondServo.stop(); thirdServo.stop();
     });
 
-    ArrayList<CRServoEx> servoList = new ArrayList<>();
     int stepIndex = 0;
 
     //TODO test as a servo group
@@ -39,13 +40,14 @@ public class ServoTurretTest extends OpMode {
         thirdServo = new CRServoEx(hardwareMap, DeviceRegistry.TURRET_SERVO_REAR.str());
         telemetry.setMsTransmissionInterval(5);
 
-        firstServo.setInverted(true);
-        secondServo.setInverted(false);
-        thirdServo.setInverted(true);
+        firstServo.setInverted(Config.TurretConstants.TurretServoDirections.frontServoInverted);
+        secondServo.setInverted(Config.TurretConstants.TurretServoDirections.centerServoInverted);
+        thirdServo.setInverted(Config.TurretConstants.TurretServoDirections.rearServoInverted);
 
-        servoList.add(firstServo);
-        servoList.add(secondServo);
-        servoList.add(thirdServo);
+        CRServoArr = new CRServoEx[3];
+        CRServoArr[0] = firstServo;
+        CRServoArr[1] = secondServo;
+        CRServoArr[2] = thirdServo;
 
         gamepadEx = new GamepadEx(gamepad1);
 
@@ -66,8 +68,6 @@ public class ServoTurretTest extends OpMode {
         dpadLeft -> Move current servo backwards
          */
 
-        CRServoEx currentServo = servoList.get(stepIndex);
-
         //Run all servos forward
         aButton.whenPressed(new InstantCommand(() -> {
             firstServo.set(1); secondServo.set(1); thirdServo.set(1);
@@ -79,18 +79,21 @@ public class ServoTurretTest extends OpMode {
         })).whenReleased(StopServosCommand);
 
         dpadUp.whenPressed(new InstantCommand(() -> {
-            stepIndex = (stepIndex + 1) % servoList.size();
+            stepIndex = (stepIndex + 1) % CRServoArr.length;
         }));
 
         dpadRight.whenPressed(new InstantCommand(() -> {
+            CRServoEx currentServo = CRServoArr[stepIndex];
             currentServo.set(1);
         })).whenReleased(StopServosCommand);
 
         dpadLeft.whenPressed(new InstantCommand(() -> {
+            CRServoEx currentServo = CRServoArr[stepIndex];
             currentServo.set(-1);
         })).whenReleased(StopServosCommand);
 
-        telemetry.addLine("Servo #: " + (stepIndex));
+        CRServoEx currentServo = CRServoArr[stepIndex];
+        telemetry.addLine("Servo #: " + (stepIndex+1));
         telemetry.addLine("Servo Inverted?: " + currentServo.getInverted());
         telemetry.addLine("Servo Power: " + currentServo.getServo().getPower());
 

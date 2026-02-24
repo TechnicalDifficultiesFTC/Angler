@@ -13,6 +13,7 @@ public class ForwardIntakeCommand extends CommandBase {
     Intake intake;
     public ForwardIntakeCommand(Intake intake) {
         this.intake = intake;
+        addRequirements(intake);
     }
 
     @Override
@@ -22,8 +23,6 @@ public class ForwardIntakeCommand extends CommandBase {
 
     public boolean isFinished() {
         //yield to intake reversal
-        if (CommandScheduler.getInstance().isScheduled(new ReverseIntakeCommand(intake))) {
-            return true;
-        } else { return false; }
+        return false;
     }
 }

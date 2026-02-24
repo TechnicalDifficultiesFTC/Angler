@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
+package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.LimitsTuning;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -7,7 +7,9 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
 
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
@@ -50,6 +52,7 @@ public class TurretManualDistanceTuning extends OpMode {
     public void start() {
         indexer.setup();
         shooter.setup();
+        CommandScheduler.getInstance().schedule(new UpdateIndexerState(indexer,intake,shooter));
     }
 
     @Override
@@ -66,11 +69,11 @@ public class TurretManualDistanceTuning extends OpMode {
          */
 
         //Sensitivity toggling
-        if (gamepad2.triangleWasPressed()) {
+        if (gamepad2.xWasPressed()) {
             shooterStepIndex = (shooterStepIndex + 1) % shooterStepSizes.length;
         }
 
-        if (gamepad2.circleWasPressed()) {
+        if (gamepad2.yWasPressed()) {
             hoodStepIndex = (hoodStepIndex + 1) % hoodStepSizes.length;
         }
 
@@ -91,7 +94,7 @@ public class TurretManualDistanceTuning extends OpMode {
             hoodAngleTicks -= hoodStepSizes[hoodStepIndex];
         }
 
-        if (gamepad1.squareWasPressed()) {
+        if (gamepad1.bWasPressed()) {
             shooter.setFlywheelTargetVelocityAsPercentage(0);
         }
 
@@ -100,23 +103,21 @@ public class TurretManualDistanceTuning extends OpMode {
         shooter.setHoodAngle(hoodAngleTicks); //set hood
 
         //Other robot functions
-        indexer.processInput(gamepad1,true);
         intake.processInput(gamepad1);
 
-        telemetry.addLine("MOTM: " + MOTM);
-        telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(shooter.hoodServo.getPosition()));
-        telemetry.addLine("Target percent: " + targetVelAsPercentage);
-        telemetry.addLine();
-        telemetry.addLine("Ready?: " + (shooter.isFlywheelReady() ? "OK" : "NO"));
-        telemetry.addLine("Indexer Motor Power?: " + indexer.indexerMotor.getPower());
-        telemetry.addLine("Indexer Status: " + indexer.getIndexingStatus());
-        telemetry.update();
-
+        panelsTelemetry.addLine("MOTM: " + MOTM);
+        panelsTelemetry.addLine("Hood Angle (software ticks): " + Utils.ras(shooter.hoodServo.getPosition()));
+        panelsTelemetry.addLine("Target percent: " + targetVelAsPercentage);
+        panelsTelemetry.addLine("");
+        panelsTelemetry.addLine("Ready?: " + (shooter.isFlywheelReady() ? "OK" : "NO"));
+        panelsTelemetry.addLine("Indexer Motor Power?: " + indexer.indexerMotor.getPower());
+        panelsTelemetry.addLine("Indexer Status: " + indexer.getIndexingStatus());
 
         panelsTelemetry.addData("Target Vel (%)", Utils.ras(shooter.getFlywheelTargetVelocityAsPercentage()));
         panelsTelemetry.addData("Setpoint (rads)", Utils.ras(shooter.flywheelTargetVelocityAsRadians));
         panelsTelemetry.addData("Velocity (rads)", Utils.ras(shooter.getFlywheelVelocityAsRadians()));
-        panelsTelemetry.addData("Error", Math.abs(Utils.linearDist(shooter.flywheelTargetVelocityAsRadians, shooter.getFlywheelVelocityAsRadians())));
-        panelsTelemetry.update();
+        panelsTelemetry.addData("Error", Math.abs(Utils.xDist(shooter.flywheelTargetVelocityAsRadians, shooter.getFlywheelVelocityAsRadians())));
+        panelsTelemetry.update(telemetry);
+        CommandScheduler.getInstance().run();
     }
 }

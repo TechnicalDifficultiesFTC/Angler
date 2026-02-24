@@ -11,6 +11,8 @@ public enum DeviceRegistry {
     INDEXER_MOTOR("indexer"),
     FLYWHEEL_MOTOR_LEFT("flywheelLeft"),
     FLYWHEEL_MOTOR_RIGHT("flywheelRight"),
+    //Webcam
+    WEBCAM("webcam"),
 
     //EXTERNAL ENCODERS
     TURRET_ENCODER(FRONT_LEFT_MOTOR.str()), //inside is the motor where the encoder is attached
@@ -26,8 +28,6 @@ public enum DeviceRegistry {
     IMU("imu"),
     PINPOINT("pinpoint"),
     DISTANCE_SENSOR("distance");
-
-
 
     private final String deviceName;
 

@@ -8,6 +8,7 @@ public class StopIntakeCommand extends CommandBase {
     Intake intake;
     public StopIntakeCommand(Intake intake) {
         this.intake = intake;
+        addRequirements(intake);
     }
 
     @Override

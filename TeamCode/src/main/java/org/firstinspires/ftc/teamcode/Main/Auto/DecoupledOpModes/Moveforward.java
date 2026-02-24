@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Autonomous.DecoupledOpModes;
+package org.firstinspires.ftc.teamcode.Main.Auto.DecoupledOpModes;
 
 
 import com.pedropathing.geometry.Pose;

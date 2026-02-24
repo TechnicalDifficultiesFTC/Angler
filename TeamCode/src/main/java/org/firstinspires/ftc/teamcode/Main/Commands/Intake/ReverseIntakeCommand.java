@@ -11,6 +11,7 @@ public class ReverseIntakeCommand extends CommandBase {
     Intake intake;
     public ReverseIntakeCommand(Intake intake) {
         this.intake = intake;
+        addRequirements(intake);
     }
 
     @Override

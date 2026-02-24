@@ -35,6 +35,7 @@ public class RedThreeBall extends OpMode {
     private int shotsFired = 0;
     boolean isBlue = false;
     MecanumDrivetrain mecanumDrivetrain;
+    public static Pose endPose;
     @Override
     public void init() {
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startPose, false);

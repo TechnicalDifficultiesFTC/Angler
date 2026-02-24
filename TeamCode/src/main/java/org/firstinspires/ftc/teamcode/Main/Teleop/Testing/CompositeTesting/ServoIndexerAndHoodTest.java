@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.CompositeTesting;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
 
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
@@ -11,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 
 @Configurable
-@TeleOp(name = "Servo Indexer and Hood Test", group = "Testing/Composite")
+@TeleOp(name = "Indexer & Hood Servo Test", group = "Testing/Composite")
 public class ServoIndexerAndHoodTest extends OpMode {
     Shooter shooter;
     Indexer indexer;
@@ -32,6 +34,7 @@ public class ServoIndexerAndHoodTest extends OpMode {
 
     public void start() {
         indexer.setup();
+        //CommandScheduler.getInstance().schedule(new UpdateIndexerState(indexer,intake,shooter));
     }
 
     public void loop() {
@@ -46,10 +49,11 @@ public class ServoIndexerAndHoodTest extends OpMode {
         -standard gp1 intake/indexer functions binded to gp2
          */
         if (gamepad1.xWasPressed()) {
-            shooterServoPosition += .05;
+            shooterServoPosition += .005;
         }
+
         if (gamepad1.yWasPressed()) {
-            shooterServoPosition -= .05;
+            shooterServoPosition -= .005;
         }
 
         if (gamepad1.dpadUpWasPressed()) {
@@ -64,11 +68,11 @@ public class ServoIndexerAndHoodTest extends OpMode {
         shooter.hoodServo.setPosition(shooterServoPosition);
 
         //Other robot functions
-        indexer.processInput(gamepad2,true);
         intake.processInput(gamepad2);
 
         telemetry.addLine("MOTM: " + MOTM);
-        telemetry.addLine("Hood Angle (software ticks): " + Utils.ras(shooter.hoodServo.getPosition()));
-        telemetry.addLine("Indexer Servo Position (software ticks): " + Utils.ras(indexer.indexerServo.getPosition()));
+        telemetry.addLine("Hood Angle (software ticks): " + shooter.hoodServo.getPosition());
+        telemetry.addLine("Indexer Servo Position (software ticks): " + (indexer.indexerServo.getPosition()));
+        telemetry.addLine("Shooter degrees: " + shooter.getHoodExitDegrees(shooterServoPosition));
     }
 }

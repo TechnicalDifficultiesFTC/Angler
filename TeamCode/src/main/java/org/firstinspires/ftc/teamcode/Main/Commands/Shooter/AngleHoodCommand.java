@@ -24,7 +24,7 @@ public class AngleHoodCommand extends CommandBase {
         targetAngle = shooter.getHoodILUTValue(distance);
 
         double currentAngle = shooter.hoodServo.getPosition();
-        double angularDistance = Utils.linearDist(currentAngle, targetAngle);
+        double angularDistance = Utils.xDist(currentAngle, targetAngle);
 
         shooter.setHoodAngle(targetAngle);
 

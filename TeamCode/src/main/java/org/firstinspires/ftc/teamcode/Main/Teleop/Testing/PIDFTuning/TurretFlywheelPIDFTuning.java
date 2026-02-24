@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
+package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.PIDFTuning;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -6,7 +6,18 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.button.Button;
+import com.seattlesolvers.solverslib.command.button.Trigger;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmOutCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
+import org.firstinspires.ftc.teamcode.Main.Commands.Intake.ForwardIntakeCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Intake.ReverseIntakeCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Intake.StopIntakeCommand;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
@@ -17,8 +28,8 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 public class TurretFlywheelPIDFTuning extends OpMode {
     double curTargetVelocityAsPercentage = 0;
     double error = 0;
-    double highVelocityAsPercent = 200;
-    double lowVelocityAsPercent = 100;
+    double highVelocityAsPercent = 75;
+    double lowVelocityAsPercent = 20;
     int stepIndex;
     double[] stepSizes = {10.0, 1.0, 0.1, 0.001, 0.0001};
     double P = Config.ShooterConstants.FlywheelPIDF.p;
@@ -30,9 +41,32 @@ public class TurretFlywheelPIDFTuning extends OpMode {
     TelemetryManager panelsTelemetry;
     Intake intake;
     Indexer indexer;
+    GamepadEx gamepadEx;
+    Button aButton;
+    Button bButton;
+    Button yButton;
+    Button dpadUp;
+    Button dpadLeft;
+    Button dpadRight;
+    Trigger leftTrigger;
+    Trigger rightTrigger;
 
     @Override
     public void init() {
+        gamepadEx = new GamepadEx(gamepad1);
+
+        aButton = gamepadEx.getGamepadButton(GamepadKeys.Button.A);
+        bButton = gamepadEx.getGamepadButton(GamepadKeys.Button.B);
+        yButton = gamepadEx.getGamepadButton(GamepadKeys.Button.Y);
+        dpadUp = gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_UP);
+        dpadLeft = gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_LEFT);
+        dpadRight = gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT);
+
+        leftTrigger = new Trigger(() -> gamepadEx.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >
+                Config.ControllerConstants.TRIGGER_THRESHOLD);
+        rightTrigger = new Trigger(() -> gamepadEx.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >
+                Config.ControllerConstants.TRIGGER_THRESHOLD);
+
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         MOTM = Utils.generateMOTM();
         shooter = new Shooter(hardwareMap);
@@ -40,12 +74,27 @@ public class TurretFlywheelPIDFTuning extends OpMode {
         intake = new Intake(hardwareMap);
     }
 
+    public void start() {
+        shooter.setup();
+        indexer.setup();
+        CommandScheduler.getInstance().schedule(new UpdateIndexerState(indexer,intake,shooter));
+    }
+
     @Override
     public void loop() {
         //Switch between high velocity and low velocity
 
-        intake.processInput(gamepad1);
-        indexer.processInput(gamepad1,true);
+        //Intake indexer controls
+        leftTrigger
+                .whileActiveOnce(new ForwardIntakeCommand(intake))
+                .whenInactive(new StopIntakeCommand(intake));
+
+        rightTrigger
+                .whileActiveOnce(new ReverseIntakeCommand(intake))
+                .whenInactive(new StopIntakeCommand(intake));
+
+        dpadLeft.whenPressed(new MoveIndexerArmOutCommand(indexer));
+        dpadRight.whenPressed(new MoveIndexerArmInCommand(indexer));
 
         if (gamepad1.yWasPressed()) {
             if (curTargetVelocityAsPercentage == highVelocityAsPercent) {
@@ -99,6 +148,6 @@ public class TurretFlywheelPIDFTuning extends OpMode {
                 (DcMotor.RunMode.RUN_USING_ENCODER).f);
 
         panelsTelemetry.update(telemetry);
-
+        CommandScheduler.getInstance().run();
     }
 }

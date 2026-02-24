@@ -18,7 +18,7 @@ public class ShooterTracker {
     private double targetVelocityPercent = 0;
     private static final long COOLDOWN_MS =
             Config.ShooterConstants.ShooterTracker.BALL_FIRING_COOLDOWN_MS;
-
+    private double velocityDrop = 0;
     public ShooterTracker() {}
 
     /**
@@ -66,7 +66,7 @@ public class ShooterTracker {
         double oldAvg = getAverageOfRange(0, SAMPLE_BUFFER_SIZE / 2);
         double newAvg = getAverageOfRange(SAMPLE_BUFFER_SIZE / 2, SAMPLE_BUFFER_SIZE);
 
-        double velocityDrop = oldAvg - newAvg;
+        velocityDrop = oldAvg - newAvg;
 
         // Only detect shot if:
         // 1. Velocity dropped significantly
@@ -97,4 +97,5 @@ public class ShooterTracker {
     public int getShotsFired() { return shotsFired; }
     public boolean isMonitoring() { return monitoring; }
     public void resetShotCount() { shotsFired = 0; }
+    public double getVelocityDrop() { return velocityDrop; }
 }

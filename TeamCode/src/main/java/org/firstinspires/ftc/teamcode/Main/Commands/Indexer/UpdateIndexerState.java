@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Main.Commands.Indexer;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 
@@ -11,14 +12,27 @@ public class UpdateIndexerState extends CommandBase {
     Indexer indexer;
     Intake intake;
     Shooter shooter;
+    TelemetryManager telemetry;
+
+    public UpdateIndexerState(Indexer indexer, Intake intake, Shooter shooter, TelemetryManager telemetry) {
+        this.indexer = indexer;
+        this.intake = intake;
+        this.shooter = shooter;
+        this.telemetry = telemetry;
+        addRequirements(indexer);
+    }
 
     public UpdateIndexerState(Indexer indexer, Intake intake, Shooter shooter) {
         this.indexer = indexer;
         this.intake = intake;
         this.shooter = shooter;
+        addRequirements(indexer);
     }
 
     public void initialize() {
+    }
+
+    public void execute() {
 
         /*
         state hierarchy:
@@ -30,25 +44,26 @@ public class UpdateIndexerState extends CommandBase {
 
         boolean ballCollidingWithArm = indexer.ballDetected() && indexer.isArmInTheWay();
         boolean intakeMotorRunningForward = intake.intakeMotor.getPower() == 1;
-        boolean isReverseIndexerCommandPresent = CommandScheduler.getInstance().isScheduled(
-                new ReverseIndexer(indexer)
-        );
-
 
         if (ballCollidingWithArm) {
             indexer.setIndexerPower(.15); //set to slower speed
+            //telemetry.addData("istate = ", "ball colliding");
         }
-        else if (intakeMotorRunningForward && shooter.isFlywheelReady()) {
+        else if (shooter.isFlywheelReady()) {
             indexer.setIndexerPower(1);
+            //telemetry.addData("istate = ", "ball push through");
         }
-        else if (intakeMotorRunningForward && !shooter.isFlywheelReady()) {
+        else if (!shooter.isFlywheelReady()) {
             indexer.setIndexerPower(0);
+            //telemetry.addData("istate = ", "ball stall");
         }
         else{
-            indexer.setIndexerPower(.75); //set to default speed to reserve voltage
+            indexer.setIndexerPower(1);
+            //telemetry.addData("istate = ", "ball override");
         }
     }
 
+    @Override
     public boolean isFinished() {
         return false;
     }

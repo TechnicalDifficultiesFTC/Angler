@@ -40,6 +40,36 @@ public class Shooter extends SubsystemBase {
     public Follower follower;
     private ShooterTracker shooterTracker = new ShooterTracker();
 
+    // Constants for servo conversion
+    //max degree
+    public static final double SERVO_DEGREES_PER_UNIT = 189; // 270 degrees for servo value 1.0 TODO: tune me
+    public static final double TICK_SCALE = 1000.0; // Work with values 0-1000 instead of 0-1
+    public static final double SERVO_MIN_TICKS = 0;
+    public static final double SERVO_MAX_TICKS = 0; //TODO tune me
+
+    // Convert scaled ticks (0-1000) to degrees
+    public double scaledTicksToDegrees(double scaledTicks) {
+        double servoValue = scaledTicks / TICK_SCALE; // Convert back to 0-1 range
+        return servoValue * SERVO_DEGREES_PER_UNIT;
+    }
+
+    // Convert degrees to scaled ticks (0-1000)
+    public double degreesToScaledTicks(double degrees) {
+        double servoValue = degrees / SERVO_DEGREES_PER_UNIT;
+        return servoValue * TICK_SCALE;
+    }
+
+    // Set hood angle using degrees
+    public void setHoodAngleDegrees(double degrees) {
+        double servoValue = degrees / SERVO_DEGREES_PER_UNIT;
+        hoodServo.setPosition(servoValue);
+    }
+
+    // Set hood using scaled ticks (0-1000)
+    public void setHoodScaledTicks(double scaledTicks) {
+        double servoValue = scaledTicks / TICK_SCALE;
+        hoodServo.setPosition(servoValue);
+    }
 
     public Shooter(HardwareMap hardwareMap) {
         //Motor declaration
@@ -49,6 +79,7 @@ public class Shooter extends SubsystemBase {
         //Hood servo
         hoodServo = hardwareMap.servo.get(DeviceRegistry.HOOD_SERVO.str());
         hoodServo.setDirection(Servo.Direction.FORWARD);
+        hoodServo.scaleRange(SERVO_MIN_TICKS,SERVO_MAX_TICKS); //TODO apply range scaling
 
         //Flywheel setup
         //Left motor
@@ -114,23 +145,16 @@ public class Shooter extends SubsystemBase {
         setFlywheelTargetVelocityAsRadians(velocity);
     }
 
-    public void setFlywheelMotorLeftVelocityAsRadians(double radians) {
-        flywheelMotorLeft.setVelocity(radians,AngleUnit.RADIANS);
-    }
-
-    public void setFlywheelMotorRightVelocityAsRadians(double radians) {
-        flywheelMotorRight.setVelocity(radians,AngleUnit.RADIANS);
-    }
-
     public void setFlywheelTargetVelocityAsPercentage(double percent) {
         // Percent to radians
         flywheelTargetVelocityAsRadians = Config.ShooterConstants.MAX_VELOCITY_RADIANS_PER_SEC *
                 ((percent)*.01);
 
+        setFlywheelTargetVelocityAsRadians(flywheelTargetVelocityAsRadians);
     }
 
     public void setFlywheelTargetVelocityAsRadians(double radians) {
-        flywheelMotorLeft.setVelocity(radians, AngleUnit.RADIANS);
+        flywheelMotorGroup.setVelocityTarget(radians, AngleUnit.RADIANS);
     }
 
     /* Hood Methods */
@@ -159,6 +183,24 @@ public class Shooter extends SubsystemBase {
                 Config.ShooterConstants.MAX_ILUT_DIST-.001);
         return hoodLUT.get(distance);
     }
+
+    /**
+     * @param servoTicks
+     * @return
+     */
+    public double getHoodExitDegrees(double servoTicks) {
+        double degreesAtZero = 36;
+        double ticksDeadzone = 0.09;
+        double degreesPerTick = 43/.21;
+        if (servoTicks > ticksDeadzone) {
+            return ((servoTicks-ticksDeadzone)*degreesPerTick) + degreesAtZero;
+        }
+        else{
+            return degreesAtZero;
+        }
+
+        //double degreesPer
+    }
     /**s
      * @return True if flywheel velocity is within an acceptable margin of error
      * Acceptable margin of error is defined in turret constants
@@ -166,7 +208,7 @@ public class Shooter extends SubsystemBase {
     public boolean isFlywheelReady() {
         double vel = getFlywheelVelocityAsRadians();
         double targetVel = getFlywheelTargetVelocityAsRadians();
-        return Utils.linearDist(vel, targetVel) <= Config.ShooterConstants.FLYWHEEL_ERROR_MARGIN_RADS;
+        return Utils.xDist(vel, targetVel) <= Config.ShooterConstants.FLYWHEEL_ERROR_MARGIN_RADS;
     }
 
     /**

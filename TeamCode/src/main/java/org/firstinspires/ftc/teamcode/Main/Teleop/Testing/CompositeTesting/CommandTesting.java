@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.CompositeTesting;
 
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -15,6 +18,9 @@ import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInComm
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmOutCommand;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
 import org.firstinspires.ftc.teamcode.Main.Commands.Intake.ForwardIntakeCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Intake.ReverseIntakeCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Intake.StopIntakeCommand;
+import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
@@ -38,9 +44,11 @@ public class CommandTesting extends OpMode {
     Button dpadRight;
     Trigger leftTrigger;
     Trigger rightTrigger;
+    TelemetryManager panelsTelem;
     @Override
     public void init() {
         gamepadEx = new GamepadEx(gamepad1);
+        panelsTelem = PanelsTelemetry.INSTANCE.getTelemetry();
 
         aButton = gamepadEx.getGamepadButton(GamepadKeys.Button.A);
         bButton = gamepadEx.getGamepadButton(GamepadKeys.Button.B);
@@ -49,6 +57,11 @@ public class CommandTesting extends OpMode {
         dpadLeft = gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_LEFT);
         dpadRight = gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT);
 
+        leftTrigger = new Trigger(() -> gamepadEx.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) >
+                Config.ControllerConstants.TRIGGER_THRESHOLD);
+        rightTrigger = new Trigger(() -> gamepadEx.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) >
+                Config.ControllerConstants.TRIGGER_THRESHOLD);
+
         commandSchedulerInstance = CommandScheduler.getInstance();
 
         shooter = new Shooter(hardwareMap);
@@ -56,19 +69,39 @@ public class CommandTesting extends OpMode {
         indexer = new Indexer(hardwareMap);
         turret = new Turret(hardwareMap);
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap,new Pose(),true);
-
-        //This command will never terminate
-        commandSchedulerInstance.schedule(new UpdateIndexerState(indexer,intake,shooter));
     }
 
     @Override
+    public void start() {
+        shooter.setup();
+        indexer.setup();
+        //This command will never terminate
+        commandSchedulerInstance.schedule(new UpdateIndexerState(indexer,intake,shooter,panelsTelem));
+    }
+    @Override
     public void loop() {
 
-        aButton.whenPressed(new ForwardIntakeCommand(intake));
+        leftTrigger
+                .whileActiveOnce(new ForwardIntakeCommand(intake))
+                .whenInactive(new StopIntakeCommand(intake));
+
+        rightTrigger
+                .whileActiveOnce(new ReverseIntakeCommand(intake))
+                .whenInactive(new StopIntakeCommand(intake));
+
         dpadLeft.whenPressed(new MoveIndexerArmOutCommand(indexer));
         dpadRight.whenPressed(new MoveIndexerArmInCommand(indexer));
 
+        telemetry.addLine("ball seen?: " + indexer.ballDetected());
+        telemetry.addLine("arm out?: " + indexer.isArmInTheWay());
+        telemetry.addLine("indexer motor power: " + indexer.indexerMotor.getPower());
+        telemetry.addLine("Shooter ready?: " + shooter.isFlywheelReady());
+        panelsTelem.update(telemetry);
         commandSchedulerInstance.run();
-        telemetry.addLine(CommandScheduler.getInstance().toString());
+
+    }
+
+    public boolean cmdSch(Command command) {
+        return commandSchedulerInstance.isScheduled(command);
     }
 }

@@ -1,141 +1,87 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.seattlesolvers.solverslib.command.button.Button;
+import com.seattlesolvers.solverslib.command.button.Trigger;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
-import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
-import org.firstinspires.ftc.teamcode.Main.Helpers.Drawing;
-import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
+import org.firstinspires.ftc.teamcode.Main.Auto.RedThreeBall;
+import org.firstinspires.ftc.teamcode.Main.Commands.ChangeDTSpeed;
+import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FirePayload;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmOutCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Intake.ForwardIntakeCommand;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
-@Configurable
-@TeleOp(name="Red Solo Static Shooter", group="!Solo")
+@TeleOp(name="Red Solo V2", group="!Solo")
 public class RedSolo extends OpMode {
-    //Declarations
-    double distance;
+    //Buttons!
+    Button aButton;
+    Button bButton;
+    Button yButton;
+    Button xButton;
+    Button dpadLeft;
+    Button dpadRight;
+    Button leftButton;
+    Trigger leftTrigger;
+
+    Pose startPose = RedThreeBall.endPose;
     MecanumDrivetrain mecanumDrivetrain;
     Intake intake;
     Indexer indexer;
     Shooter shooter;
-    String MOTM = Utils.generateMOTM();
+    Turret turret;
+    FirePayload firePayload;
     TelemetryManager panelsTelemetry;
-    boolean shootCommandIncomplete = false;
-    boolean isBlue = false;
-    Follower follower;
-    Pose initialFollowerPose = Config.AutoPoses.redAutoEndPose;
 
-    boolean shooterIdle = true;
     @Override
     public void init() {
-        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, initialFollowerPose, isBlue); //Construct DT
-
-        intake = new Intake(hardwareMap); //Construct Intake
-        shooter = new Shooter(hardwareMap); //Construct Turret
-        indexer = new Indexer(hardwareMap); //Construct Indexer
-
-        follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(initialFollowerPose);
-        follower.update();
-        //follower.startTeleOpDrive(true);
-
-        Drawing.init();
-
-        //Telemetry setup
-        telemetry.setMsTransmissionInterval(5);
-
-        telemetry.addLine(Config.dasshTag);
-        telemetry.addLine(MOTM);
-        telemetry.addLine();
-        telemetry.addLine("INITIALIZED DRIVETRAIN, INTAKE, INDEXER, TURRET :)");
-        telemetry.update();
+        GamepadEx pilotGamepad = new GamepadEx(gamepad1);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        //Button assignment
+        aButton = pilotGamepad.getGamepadButton(GamepadKeys.Button.A);
+        bButton = pilotGamepad.getGamepadButton(GamepadKeys.Button.B);
+        xButton = pilotGamepad.getGamepadButton(GamepadKeys.Button.X);
+        yButton = pilotGamepad.getGamepadButton(GamepadKeys.Button.Y);
+        dpadLeft = pilotGamepad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT);
+        dpadRight = pilotGamepad.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT);
+
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap,startPose,false);
+        intake = new Intake(hardwareMap);
+        indexer = new Indexer(hardwareMap);
+        shooter = new Shooter(hardwareMap);
+        turret = new Turret(hardwareMap);
+
+        firePayload = new FirePayload(intake,indexer,shooter,turret,mecanumDrivetrain);
     }
 
     @Override
     public void start() {
-        shooter.setup();
         indexer.setup();
-        mecanumDrivetrain.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooter.setup();
     }
 
     @Override
     public void loop() {
-            double curVelocityAsRadians = shooter.getFlywheelVelocityAsRadians();
-            double curTargetVelocityAsRadians = shooter.flywheelTargetVelocityAsRadians;
-            double error = curTargetVelocityAsRadians - curVelocityAsRadians;
+        aButton.whenPressed(new ChangeDTSpeed(mecanumDrivetrain));
+        yButton.whenPressed(firePayload);
+        dpadLeft.whenPressed(new MoveIndexerArmOutCommand(indexer));
+        dpadRight.whenPressed(new MoveIndexerArmInCommand(indexer));
 
-            //Subsystem calls
-            indexer.processInput(gamepad1, shooterIdle); //Indexer
-            intake.processInput(gamepad1); //Intake
-            mecanumDrivetrain.processInputRC(gamepad1);
-            mecanumDrivetrain.periodic(); //update follower and pinpoint
+        leftTrigger.toggleWhenActive(new ForwardIntakeCommand(intake));
+    }
 
-            //Controls:
-            if (gamepad1.dpadUpWasPressed()) {
-                shooter.setFlywheelTargetVelocityAsPercentage(30);
-                shooterIdle = true;
-            }
+    public void pushTelemetry() {
 
-            if (gamepad1.dpadDownWasPressed()) {
-                shooter.setFlywheelTargetVelocityAsPercentage(0);
-                shooterIdle = true;
-            }
-
-//            //Make the shooter command a thing here
-//            if (gamepad1.yWasPressed() || shootCommandIncomplete) {
-//                shootCommandIncomplete = shootCommand(isBlue);
-//            }
-
-
-            //Follower
-            if (gamepad1.optionsWasPressed()) {
-                follower.update();
-            }
-            follower.update();
-
-
-//            follower.setTeleOpDrive(gamepad1.left_stick_x,
-//                    -gamepad1.left_stick_y,
-//                    -gamepad1.right_stick_x,
-//                    false);
-
-            //turret.alignTurret(x,y,heading,false,telemetry);
-
-            //Drawing
-            Drawing.drawDebug(follower);
-            Drawing.sendPacket();
-
-            /* TELEMETRY!!!!! */
-            telemetry.addLine(MOTM);
-
-            //Drivetrain
-            telemetry.addLine("\nDT LPM: " + mecanumDrivetrain.isLowPowerMode());
-            //Indexer
-            telemetry.addLine("Speed rec: " + shooter.getSpeedILUTValue(distance));
-            telemetry.addLine("Hood rec: " + shooter.getHoodILUTValue(distance));
-            telemetry.addLine();
-            telemetry.addLine("Indexer Motor Power: " + indexer.indexerMotor.getPower());
-            telemetry.addLine("Ready?: " + shooter.isFlywheelReady());
-            telemetry.addLine("Shooter command incomplete?: " + shootCommandIncomplete);
-            panelsTelemetry.addLine("Estimated distance: " + Utils.ras(mecanumDrivetrain.getEstimatedDistanceToGoal())
-            );
-
-            double x = Utils.rad(follower.getPose().getX(),2);
-            double y = Utils.rad(follower.getPose().getY(),2);
-            double deg = Utils.rad(Math.toDegrees(follower.getPose().getHeading()),2);
-            panelsTelemetry.addLine("EST Pose: (x,y,deg) x: " + x + " y: " + y +  " deg: " + deg);
-
-            //Telemetry update
-            panelsTelemetry.update(telemetry);
     }
 }

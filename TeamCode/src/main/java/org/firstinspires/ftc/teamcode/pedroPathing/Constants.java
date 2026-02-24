@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 @Configurable
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(Config.DrivetrainConstants.ROBOT_MASS_KGS)
+            .mass(Config.DrivetrainConstants.ROBOT_MASS_KGS) //TODO update
             .forwardZeroPowerAcceleration(-30.9171137580957064)
             .lateralZeroPowerAcceleration(-67.54516826509496)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.05,0,0,0.01))
@@ -28,7 +28,7 @@ public class Constants {
             .centripetalScaling(0.0005);
 
     //TODO look into breaking strength error during line test
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.5, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 50, 1.5, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)

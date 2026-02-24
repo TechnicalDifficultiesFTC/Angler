@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
+package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.LimitsTuning;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -8,27 +8,29 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
 
 @Configurable
-@TeleOp(name = "Turret Dead Rotation", group = "Manual Tests")
+@TeleOp(name = "Turret Dead Rotation", group = "Turret Servo Stuff")
 public class TurretDeadRotation extends OpMode {
     TelemetryManager panelsTelemetry;
     Shooter shooter;
+    Turret turret;
     String MOTM;
 
     public void init() {
         MOTM = Utils.generateMOTM();
         shooter = new Shooter(hardwareMap);
+        turret = new Turret(hardwareMap);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         telemetry.setMsTransmissionInterval(5);
     }
 
     public void loop() {
-        //telemetry.addLine("Position (Ticks): " + shooter.getActualTurretPos());
-        //telemetry.addLine("Position (Degrees): " + Utils.turretTicksToDegrees(
-                //shooter.getActualTurretPos()));
 
+        telemetry.addLine("Position: " + turret.getCurrentPositionAsTicks());
+        telemetry.addLine("Degs Traveled: " + Utils.ras(turret.getCurrentPositionAsDegrees()));
         telemetry.update();
         panelsTelemetry.update(telemetry);
 

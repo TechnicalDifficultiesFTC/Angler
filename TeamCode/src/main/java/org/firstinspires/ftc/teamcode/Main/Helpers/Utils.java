@@ -1,11 +1,10 @@
 package org.firstinspires.ftc.teamcode.Main.Helpers;
 
-import com.pedropathing.geometry.Pose;
-
 import java.util.Random;
 
 public class Utils {
-    public static double linearDist(double a, double b) {
+
+    public static double xDist(double a, double b) {
         return Math.abs(a-b);
     }
     public static void halt(long millis) {
@@ -97,6 +96,14 @@ public class Utils {
 
     public static double turretTicksToDegrees(double ticks) {
         return (ticks/Config.TurretConstants.TICKSPERDEG);
+    }
+
+    public static double hoodTicksToDegrees(double ticks) {
+        return (ticks/Config.ShooterConstants.DEGREES_PER_HOOD_TICK);
+    }
+
+    public static double getScaledHoodTicks(double ticks) {
+        return (ticks*100);
     }
 }
 

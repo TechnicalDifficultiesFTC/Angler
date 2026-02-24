@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Teleop.Testing;
+package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.CompositeTesting;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -18,11 +18,9 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 @TeleOp(name="Ball Held Test", group="Testing/Sensors")
 public class BallHeldTest extends OpMode {
     //Declarations
-    double percent = 50;
     MecanumDrivetrain mecanumDrivetrain;
     Intake intake;
     Indexer indexer;
-    Shooter shooter;
     String MOTM = Utils.generateMOTM();
     TelemetryManager panelsTelemetry;
 
@@ -37,7 +35,6 @@ public class BallHeldTest extends OpMode {
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, new Pose(), true); //Construct DT
         intake = new Intake(hardwareMap); //Construct Intake
         indexer = new Indexer(hardwareMap); //Construct Indexer
-        shooter = new Shooter(hardwareMap); //Construct Turret
 
         //Setup
         telemetry.setMsTransmissionInterval(5);
@@ -72,11 +69,9 @@ public class BallHeldTest extends OpMode {
         telemetry.addLine("Distance Reported: " + indexer.getDistanceReported());
         telemetry.addLine("Arm in the way?: " + indexer.isArmInTheWay());
         telemetry.addLine("Is Ball Blocked?: " + indexer.isBallBlocked());
-        telemetry.addLine("Did auto recover?: "+ indexer.didAutoRecover);
         telemetry.addLine("Indexer Power: " + indexer.indexerMotor.getPower());
         telemetry.addLine("Indexer reversing: " + indexer.indexerReversing);
 
-        telemetry.update();
         panelsTelemetry.update(telemetry);
     }
 }

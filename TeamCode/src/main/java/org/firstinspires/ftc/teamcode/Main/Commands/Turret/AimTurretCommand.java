@@ -1,14 +1,18 @@
 package org.firstinspires.ftc.teamcode.Main.Commands.Turret;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
-//Indefinite command
+/**
+ * This command should run indefinitely
+ */
 public class AimTurretCommand extends CommandBase {
     Turret turret;
     Shooter shooter;
@@ -18,7 +22,10 @@ public class AimTurretCommand extends CommandBase {
     double turretOffsetY = 0;
     double goalPositionX = 0;
     double goalPositionY = 0;
-    public AimTurretCommand(Turret turret, Shooter shooter, MecanumDrivetrain mecanumDrivetrain) {
+    Telemetry telemetry;
+    public AimTurretCommand(Turret turret, MecanumDrivetrain mecanumDrivetrain, Shooter shooter, Telemetry telemetry) {
+        this.shooter = shooter;
+        this.telemetry = telemetry;
         this.turret = turret;
         this.mecanumDrivetrain = mecanumDrivetrain;
         if (mecanumDrivetrain.isBlue()) {
@@ -28,6 +35,7 @@ public class AimTurretCommand extends CommandBase {
             goalPositionX = Config.FieldPositions.redGoalX;
             goalPositionY = Config.FieldPositions.redGoalY;
         }
+        addRequirements(turret);
     }
 
     public void initialize() {
@@ -40,18 +48,28 @@ public class AimTurretCommand extends CommandBase {
         followerReference.update();
         double distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
 
-        double positionX = goalPositionX - followerReference.getPose().getX();
-        double positionY = goalPositionY - followerReference.getPose().getY();
+        double positionX = goalPositionX - (followerReference.getPose().getX() + turretOffsetX);
+        double positionY = goalPositionY - (followerReference.getPose().getY() + turretOffsetY);
 
         //Shooting on the fly stuff
-        double velocityX = followerReference.getVelocity().getXComponent();
-        double velocityY = followerReference.getVelocity().getYComponent();
+        //double velocityX = followerReference.getVelocity().getXComponent();
+        //double velocityY = followerReference.getVelocity().getYComponent();
+        //telemetry.addLine("velocityX: " + velocityX);
+        //telemetry.addLine("velocityY" + velocityY);
 
-        double ballOutputVelocity = shooter.getSpeedILUTValue(distance);
-        double flightTime = distance / ballOutputVelocity;
+        double hoodAngle = shooter.getHoodILUTValue(distance); //TODO make hood angle ticks to degrees conversion
+        double ballOutputWheelSpeed = shooter.getSpeedILUTValue(distance);
+        double ballVelocity = ballOutputWheelSpeed * Math.cos(hoodAngle);
 
-        double targetX = (positionX / flightTime) - velocityX;
-        double targetY = (positionY / flightTime) - velocityY;
+        telemetry.addLine("ball vel: " + ballVelocity);
+        double ballFlightTime = distance / ballVelocity;
+        telemetry.addLine("ball flight time");
+
+        double targetX = (positionX / ballFlightTime);// - velocityX;
+        double targetY = (positionY / ballFlightTime);// - velocityY;
+
+        telemetry.addLine("targetX " + targetX);
+        telemetry.addLine("targetY" + targetY);
 
         double theta;
         if (0 > targetX) {
@@ -60,8 +78,13 @@ public class AimTurretCommand extends CommandBase {
             theta = Math.toDegrees(Math.atan(targetY/targetX));
         }
 
+        telemetry.addLine("theta" + theta);
         //Make turret field centric
         double robotHeading = Math.toDegrees(followerReference.getHeading());
-        turret.setCurrentPositionAsDegrees(theta - robotHeading);
+
+        telemetry.addLine("Robot heading " + robotHeading);
+        telemetry.addLine("Robot desired angle " +  (theta - robotHeading));
+
+        //turret.setTurretPositionAsDegrees(theta - robotHeading);
     }
 }
