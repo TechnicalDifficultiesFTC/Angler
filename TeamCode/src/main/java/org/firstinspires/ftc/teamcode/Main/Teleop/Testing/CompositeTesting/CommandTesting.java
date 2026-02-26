@@ -13,6 +13,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
+import org.firstinspires.ftc.teamcode.Main.Commands.Drivetrain.FlipDrivetrainLPM;
 import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FireOnce;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmOutCommand;
@@ -27,7 +28,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
-@TeleOp(name = "Command Testing", group = "Testing/Composite")
+@TeleOp(name = "Command Testing", group = "Misc/Test")
 public class CommandTesting extends OpMode {
     Shooter shooter;
     Intake intake;
@@ -65,7 +66,7 @@ public class CommandTesting extends OpMode {
         commandSchedulerInstance = CommandScheduler.getInstance();
 
         shooter = new Shooter(hardwareMap);
-        intake = new Intake(hardwareMap);
+        intake = new Intake(hardwareMap,gamepad1);
         indexer = new Indexer(hardwareMap);
         turret = new Turret(hardwareMap);
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap,new Pose(),true);
@@ -80,25 +81,28 @@ public class CommandTesting extends OpMode {
     }
     @Override
     public void loop() {
-
-        leftTrigger
-                .whileActiveOnce(new ForwardIntakeCommand(intake))
-                .whenInactive(new StopIntakeCommand(intake));
-
-        rightTrigger
-                .whileActiveOnce(new ReverseIntakeCommand(intake))
-                .whenInactive(new StopIntakeCommand(intake));
+        //TODO: Test periodic intake
+//        leftTrigger
+//                .whileActiveOnce(new ForwardIntakeCommand(intake))
+//                .whenInactive(new StopIntakeCommand(intake));
+//
+//        rightTrigger
+//                .whileActiveOnce(new ReverseIntakeCommand(intake))
+//                .whenInactive(new StopIntakeCommand(intake));
 
         dpadLeft.whenPressed(new MoveIndexerArmOutCommand(indexer));
         dpadRight.whenPressed(new MoveIndexerArmInCommand(indexer));
 
-        telemetry.addLine("ball seen?: " + indexer.ballDetected());
-        telemetry.addLine("arm out?: " + indexer.isArmInTheWay());
-        telemetry.addLine("indexer motor power: " + indexer.indexerMotor.getPower());
+        yButton.whenPressed(new FireOnce(intake,indexer,shooter,turret,mecanumDrivetrain));
+        aButton.whenPressed(new FlipDrivetrainLPM(mecanumDrivetrain));
+
+        telemetry.addLine("Ball seen?: " + indexer.ballDetected());
+        telemetry.addLine("Arm out?: " + indexer.isArmInTheWay());
+        telemetry.addLine("Indexer motor power: " + indexer.indexerMotor.getPower());
         telemetry.addLine("Shooter ready?: " + shooter.isFlywheelReady());
         panelsTelem.update(telemetry);
-        commandSchedulerInstance.run();
 
+        commandSchedulerInstance.run();
     }
 
     public boolean cmdSch(Command command) {

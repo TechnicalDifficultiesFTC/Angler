@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.util.InterpLUT;
@@ -42,10 +43,15 @@ public class Shooter extends SubsystemBase {
 
     // Constants for servo conversion
     //max degree
-    public static final double SERVO_DEGREES_PER_UNIT = 189; // 270 degrees for servo value 1.0 TODO: tune me
+    public static final double SERVO_DEGREES_PER_UNIT = 66; // x degrees for servo value 1.0
     public static final double TICK_SCALE = 1000.0; // Work with values 0-1000 instead of 0-1
     public static final double SERVO_MIN_TICKS = 0;
-    public static final double SERVO_MAX_TICKS = 0; //TODO tune me
+    public static final double SERVO_MAX_TICKS = 0;
+
+    // Convert standard servo position (0-1) to scaled ticks (0-1000)
+    public double servoPositionToScaledTicks(double servoPosition) {
+        return servoPosition * TICK_SCALE;
+    }
 
     // Convert scaled ticks (0-1000) to degrees
     public double scaledTicksToDegrees(double scaledTicks) {
@@ -71,6 +77,29 @@ public class Shooter extends SubsystemBase {
         hoodServo.setPosition(servoValue);
     }
 
+    /**
+     * Convert servo ticks to hood exit degrees, accounting for deadzone
+     * @param servoTicks Standard servo position (0-1)
+     * @return Hood angle in degrees
+     */
+    public double getHoodExitDegrees(double servoTicks) {
+        double degreesAtZero = 36.0;          // Resting angle at servo position 0
+        double ticksDeadzone = 0.09;          // Servo doesn't move hood below this value
+
+        // Calculate degrees per tick AFTER deadzone
+        // If servo goes from 0.09 to 1.0 (0.91 range) and covers X degrees:
+        double maxServoTicks = 1.0;
+        double usableRange = maxServoTicks - ticksDeadzone; // 0.91 servo units
+        double totalDegreesOfTravel = SERVO_DEGREES_PER_UNIT - degreesAtZero; // 189 - 36 = 153 degrees
+
+        double degreesPerTick = totalDegreesOfTravel / usableRange;
+
+        if (servoTicks > ticksDeadzone) {
+            return ((servoTicks - ticksDeadzone) * degreesPerTick) + degreesAtZero;
+        } else {
+            return degreesAtZero;
+        }
+    }
     public Shooter(HardwareMap hardwareMap) {
         //Motor declaration
         flywheelMotorLeft = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.FLYWHEEL_MOTOR_LEFT.str());
@@ -79,7 +108,7 @@ public class Shooter extends SubsystemBase {
         //Hood servo
         hoodServo = hardwareMap.servo.get(DeviceRegistry.HOOD_SERVO.str());
         hoodServo.setDirection(Servo.Direction.FORWARD);
-        hoodServo.scaleRange(SERVO_MIN_TICKS,SERVO_MAX_TICKS); //TODO apply range scaling
+        hoodServo.scaleRange(SERVO_MIN_TICKS,1); //TODO apply range scaling
 
         //Flywheel setup
         //Left motor
@@ -98,6 +127,9 @@ public class Shooter extends SubsystemBase {
         constructILUTs();
     }
 
+    public void setVelocityPIDF(PIDFCoefficients pidfCoefficients) {
+        flywheelMotorGroup.setVelocityPIDF(pidfCoefficients);
+    }
     public void periodic() {
         super.periodic();
     }
@@ -113,7 +145,7 @@ public class Shooter extends SubsystemBase {
         speedsLUT = new InterpLUT();
         hoodLUT = new InterpLUT();
 
-        speedsLUT.add(18,70);
+        speedsLUT.add(20,80);
         speedsLUT.add(24,75);
         speedsLUT.add(36,80);
         speedsLUT.add(48,85);
@@ -122,7 +154,7 @@ public class Shooter extends SubsystemBase {
         speedsLUT.add(80,100);
         speedsLUT.add(101.5,180);
 
-        hoodLUT.add(18,0);
+        hoodLUT.add(20,80);
         hoodLUT.add(24,.15);
         hoodLUT.add(36,.3);
         hoodLUT.add(48,.45);
@@ -184,23 +216,6 @@ public class Shooter extends SubsystemBase {
         return hoodLUT.get(distance);
     }
 
-    /**
-     * @param servoTicks
-     * @return
-     */
-    public double getHoodExitDegrees(double servoTicks) {
-        double degreesAtZero = 36;
-        double ticksDeadzone = 0.09;
-        double degreesPerTick = 43/.21;
-        if (servoTicks > ticksDeadzone) {
-            return ((servoTicks-ticksDeadzone)*degreesPerTick) + degreesAtZero;
-        }
-        else{
-            return degreesAtZero;
-        }
-
-        //double degreesPer
-    }
     /**s
      * @return True if flywheel velocity is within an acceptable margin of error
      * Acceptable margin of error is defined in turret constants

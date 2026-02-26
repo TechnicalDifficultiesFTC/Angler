@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 
 @Disabled
-@TeleOp(name = "Field Centric Testing", group = "Testing/Systems")
+@TeleOp(name = "Field Centric Testing", group = "Drivetrain")
 public class FieldCentricTest extends OpMode {
     GoBildaPinpointDriver goBildaPinpointDriver;
     MecanumDrivetrain drivetrain;

@@ -51,7 +51,8 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
  *
  * See the sensor's product page: https://www.revrobotics.com/rev-31-1505/
  */
-@TeleOp(name = "Distance Sensor Testing", group = "Testing/Sensors")
+@Disabled
+@TeleOp(name = "Distance Sensor Testing", group = "Indexer")
 public class SensorREV2mDistance extends LinearOpMode {
 
     private DistanceSensor sensorDistance;

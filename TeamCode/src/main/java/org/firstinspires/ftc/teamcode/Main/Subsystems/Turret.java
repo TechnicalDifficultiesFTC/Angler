@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoGroup;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
@@ -39,10 +40,12 @@ public class Turret extends SubsystemBase {
 
 
     public Turret(HardwareMap hardwareMap) {
-        double p = Config.TurretConstants.TurretPIDF.p;
-        double f = Config.TurretConstants.TurretPIDF.f;
+        double p = Config.TurretConstants.TurretPIDFLarge.p;
+        double i = Config.TurretConstants.TurretPIDFLarge.i;
+        double d = Config.TurretConstants.TurretPIDFLarge.d;
+        double f = Config.TurretConstants.TurretPIDFLarge.f;
         encoder = new IsolatedThroughBoreEncoder(hardwareMap, DeviceRegistry.TURRET_ENCODER.str());
-        pidfController = new PIDFController(new PIDFCoefficients(p,0,0,f));
+        pidfController = new PIDFController(new PIDFCoefficients(p,i,d,f));
 
         //init
         frontServo = new CRServoEx(hardwareMap, DeviceRegistry.TURRET_SERVO_FRONT.str()); //leader
@@ -68,35 +71,71 @@ public class Turret extends SubsystemBase {
         return Utils.turretTicksToDegrees(getCurrentPositionAsTicks());
     }
 
-    public void setTurretPositionAsDegrees(double targetDegrees) {
+    public void tuningSetTurretPositionAsDegrees(double targetDegrees) {
         //Add degrees wrapping here
         targetDegrees = normalizeDegrees(targetDegrees);
         double power = runPIDFController(targetDegrees);
         servoGroup.set(power);
     }
+    public void tuningSetTurretPositionAsDegrees(double targetDegrees, Telemetry telemetry) {
+        //Add degrees wrapping here
+        targetDegrees = normalizeDegrees(targetDegrees);
+
+        telemetry.addLine("Setpoint: " + targetDegrees);
+        double power = runPIDFController(targetDegrees);
+        servoGroup.set(power);
+    }
+
+    /**
+     * For some reason, to make the function work in a real application thats not PIDF tuning,
+     * I have to reverse the power output?? freaky stuff...
+     */
+    public void realSetTurretPositionAsDegrees(double targetDegrees) {
+        //Add degrees wrapping here
+        targetDegrees = normalizeDegrees(targetDegrees);
+        double power = runPIDFController(targetDegrees);
+        servoGroup.set(-power);
+    }
+
     public double runPIDFController(double targetDegrees) {
-        double p = Config.TurretConstants.TurretPIDF.p;
-        double i = 0;
-        double d = Config.TurretConstants.TurretPIDF.d;
-        double f = Config.TurretConstants.TurretPIDF.f;
+        double absError = Utils.xDist(targetDegrees,getCurrentPositionAsDegrees());
+
+        if (absError < 2) {
+            return 0;
+        }
+
+        if (absError < 20) {
+
+        }
+
+        double power = longDistancePIDF(targetDegrees);
+
+        // Use tanh to smoothly scale any value to (-1, 1)
+        //smaller = more aggressive power
+        //bigger = less aggressive
+        power = Math.tanh(power / 125);
+        return power;
+    }
+
+    public double longDistancePIDF(double targetDegrees) {
+        double p = Config.TurretConstants.TurretPIDFLarge.p;
+        double i = Config.TurretConstants.TurretPIDFLarge.i;
+        double d = Config.TurretConstants.TurretPIDFLarge.d;
+        double f = Config.TurretConstants.TurretPIDFLarge.f;
 
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(p,i,d,f);
 
         pidfController.updatePosition(getCurrentPositionAsDegrees());
         pidfController.setTargetPosition(targetDegrees);
+
+
         pidfController.setCoefficients(pidfCoefficients);
         double power = pidfController.run();
 
 //        //Change ff input based on error direction
         double error = targetDegrees - getCurrentPositionAsDegrees();
         pidfController.updateFeedForwardInput(Math.signum(error));
-
-        // Use tanh to smoothly scale any value to (-1, 1)
-        // The divisor (e.g., 50) controls sensitivity - adjust based on your PIDF output magnitude
-        //smaller = more aggressive power
-        //bigger = less aggressive
-        power = Math.tanh(power / 100);
-        return power;
+        return pidfController.run();
     }
     public void setPIDFCoeffiecients(PIDFCoefficients pidfCoefficients) {
         pidfController.setCoefficients(pidfCoefficients);

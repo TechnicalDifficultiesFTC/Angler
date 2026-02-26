@@ -56,14 +56,19 @@ public class AimTurretCommand extends CommandBase {
         //double velocityY = followerReference.getVelocity().getYComponent();
         //telemetry.addLine("velocityX: " + velocityX);
         //telemetry.addLine("velocityY" + velocityY);
+        double currentShooterHoodTicks = shooter.hoodServo.getPosition();
+        double currentShooterHoodDegrees = shooter.getHoodExitDegrees(currentShooterHoodTicks);
 
-        double hoodAngle = shooter.getHoodILUTValue(distance); //TODO make hood angle ticks to degrees conversion
+        //TODO make hood angle ticks to degrees conversion
+        telemetry.addLine("Hood angle: " + currentShooterHoodDegrees);
+
         double ballOutputWheelSpeed = shooter.getSpeedILUTValue(distance);
-        double ballVelocity = ballOutputWheelSpeed * Math.cos(hoodAngle);
+        double ballVelocity = ballOutputWheelSpeed * Math.cos(currentShooterHoodDegrees);
 
-        telemetry.addLine("ball vel: " + ballVelocity);
+        telemetry.addLine("Ball vel: " + ballVelocity);
         double ballFlightTime = distance / ballVelocity;
-        telemetry.addLine("ball flight time");
+
+        telemetry.addLine("Ball flight time: " + ballFlightTime);
 
         double targetX = (positionX / ballFlightTime);// - velocityX;
         double targetY = (positionY / ballFlightTime);// - velocityY;

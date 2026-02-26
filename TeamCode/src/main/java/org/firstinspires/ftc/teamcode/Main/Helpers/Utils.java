@@ -98,10 +98,6 @@ public class Utils {
         return (ticks/Config.TurretConstants.TICKSPERDEG);
     }
 
-    public static double hoodTicksToDegrees(double ticks) {
-        return (ticks/Config.ShooterConstants.DEGREES_PER_HOOD_TICK);
-    }
-
     public static double getScaledHoodTicks(double ticks) {
         return (ticks*100);
     }

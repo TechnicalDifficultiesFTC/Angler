@@ -13,8 +13,16 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 
 public class Intake extends SubsystemBase {
     public DcMotorEx intakeMotor;
+    public Gamepad gamepad;
 
     public Intake(HardwareMap hardwareMap) {
+        intakeMotor = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.INTAKE_MOTOR.str());
+        intakeMotor.setDirection(DcMotor.Direction.FORWARD);
+        intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public Intake(HardwareMap hardwareMap, Gamepad gamepad) {
+        this.gamepad = gamepad;
         intakeMotor = (DcMotorEx) hardwareMap.dcMotor.get(DeviceRegistry.INTAKE_MOTOR.str());
         intakeMotor.setDirection(DcMotor.Direction.FORWARD);
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -29,6 +37,12 @@ public class Intake extends SubsystemBase {
         if (Utils.triggerBoolean(gamepad.left_trigger)) { intakeSpinup(); }
         else if (Utils.triggerBoolean(gamepad.right_trigger)) { intakeReverse(); }
         else { intakeStop(); }
+    }
+
+    public void periodic() {
+        if (gamepad != null) {
+            processInput(gamepad);
+        }
     }
 
     public void intakeSpinup() { intakeMotor.setPower(1); }

@@ -63,7 +63,7 @@ public class BlueSolo extends OpMode {
     public void start() {
         shooter.setup();
         indexer.setup();
-        turret.setTurretPositionAsDegrees(0);
+        turret.tuningSetTurretPositionAsDegrees(0);
         mecanumDrivetrain.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 

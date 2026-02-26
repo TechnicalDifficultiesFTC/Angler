@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 
 import java.util.ArrayList;
 
-@TeleOp(name = "Servo Directional Turret Test", group = "Turret Servo Stuff")
+@TeleOp(name = "Servo Directional Turret Test", group = "Tuning")
 public class ServoDirectionalTurretTest extends OpMode {
     GamepadEx gamepadEx;
     Button aButton;

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.CompositeTesting;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,8 +14,9 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
+@Disabled
 @Configurable
-@TeleOp(name = "Flywheel MAX Test", group = "Testing/Composite")
+@TeleOp(name = "Flywheel MAX Test", group = "Shooter")
 public class FlywheelMaxSpeed extends OpMode {
     Shooter shooter;
     String MOTM;

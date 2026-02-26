@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
-@TeleOp(name = "Turret Aimbot 100!", group = "Testing/Composite")
+@TeleOp(name = "Turret Aimbot 100!", group = "Turret")
 public class TurretAimbotTesting extends OpMode {
     Turret turret;
     MecanumDrivetrain mecanumDrivetrain;

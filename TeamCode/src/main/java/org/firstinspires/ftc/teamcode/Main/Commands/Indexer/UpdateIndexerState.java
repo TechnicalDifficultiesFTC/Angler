@@ -44,22 +44,35 @@ public class UpdateIndexerState extends CommandBase {
 
         boolean ballCollidingWithArm = indexer.ballDetected() && indexer.isArmInTheWay();
         boolean intakeMotorRunningForward = intake.intakeMotor.getPower() == 1;
+        boolean telemetryDefined = (telemetry == null);
 
         if (ballCollidingWithArm) {
             indexer.setIndexerPower(.15); //set to slower speed
-            //telemetry.addData("istate = ", "ball colliding");
+
+            if (!telemetryDefined) {
+                telemetry.addData("istate = ", "ball colliding");
+            }
         }
         else if (shooter.isFlywheelReady()) {
             indexer.setIndexerPower(1);
-            //telemetry.addData("istate = ", "ball push through");
+
+            if (!telemetryDefined) {
+                telemetry.addData("istate = ", "ball push through");
+            }
         }
         else if (!shooter.isFlywheelReady()) {
             indexer.setIndexerPower(0);
-            //telemetry.addData("istate = ", "ball stall");
+
+            if (!telemetryDefined) {
+                telemetry.addData("istate = ", "ball stall");
+            }
         }
         else{
             indexer.setIndexerPower(1);
-            //telemetry.addData("istate = ", "ball override");
+
+            if (!telemetryDefined) {
+                telemetry.addData("istate = ", "default state");
+            }
         }
     }
 

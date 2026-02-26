@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
 @Configurable
-@TeleOp(name = "Turret Manual Rotation Testing", group = "Turret Servo Stuff")
+@TeleOp(name = "Turret Manual Rotation Testing", group = "Tuning")
 public class TurretManualRotateTesting extends OpMode {
     TelemetryManager panelsTelemetry;
     Shooter shooter;
@@ -20,7 +20,7 @@ public class TurretManualRotateTesting extends OpMode {
     public int posTarget = 0;
     public static int posFar = 1000;
     public static int posClose = -500;
-    double P = Config.TurretConstants.TurretPIDF.p;
+    double P = Config.TurretConstants.TurretPIDFLarge.p;
     int stepIndex;
     double[] stepSizes = {5.0, 1.0, 0.1, 0.001, 0.0001};
     double targetDegrees = 0;

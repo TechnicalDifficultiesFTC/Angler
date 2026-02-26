@@ -18,13 +18,13 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 
 @Configurable
-@TeleOp(name = "Turret Manual Distance Calibration", group = "Manual Tests")
-public class TurretManualDistanceTuning extends OpMode {
+@TeleOp(name = "Shooter Manual Distance Calibration", group = "Tuning")
+public class ShooterManualDistanceCalibration extends OpMode {
     Shooter shooter;
     Indexer indexer;
     Intake intake;
     double targetVelAsPercentage = 0;
-    double hoodAngleTicks = 0;
+    double hoodAngleDegs = 0;
     String MOTM;
     TelemetryManager panelsTelemetry;
 
@@ -35,6 +35,7 @@ public class TurretManualDistanceTuning extends OpMode {
     double[] hoodStepSizes = {0.05,0.025,0.005};
     GoBildaPinpointDriver pinpointDriver;
     MecanumDrivetrain drivetrain;
+    UpdateIndexerState updateIndexerState;
 
     public void init() {
         MOTM = Utils.generateMOTM();
@@ -43,7 +44,7 @@ public class TurretManualDistanceTuning extends OpMode {
         indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
         drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(),true);
-
+        updateIndexerState = new UpdateIndexerState(indexer,intake,shooter,panelsTelemetry);
         telemetry.setMsTransmissionInterval(5);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     }
@@ -52,7 +53,7 @@ public class TurretManualDistanceTuning extends OpMode {
     public void start() {
         indexer.setup();
         shooter.setup();
-        CommandScheduler.getInstance().schedule(new UpdateIndexerState(indexer,intake,shooter));
+        CommandScheduler.getInstance().schedule(updateIndexerState);
     }
 
     @Override
@@ -87,11 +88,11 @@ public class TurretManualDistanceTuning extends OpMode {
         }
 
         if (gamepad1.dpadRightWasPressed()) {
-            hoodAngleTicks += hoodStepSizes[hoodStepIndex];
+            hoodAngleDegs += 2.5;
         }
 
         if (gamepad1.dpadLeftWasPressed()) {
-            hoodAngleTicks -= hoodStepSizes[hoodStepIndex];
+            hoodAngleDegs -= 2.5;
         }
 
         if (gamepad1.bWasPressed()) {
@@ -99,8 +100,7 @@ public class TurretManualDistanceTuning extends OpMode {
         }
 
         //Manual turret setting functions
-
-        shooter.setHoodAngle(hoodAngleTicks); //set hood
+        shooter.setHoodAngleDegrees(hoodAngleDegs);
 
         //Other robot functions
         intake.processInput(gamepad1);
@@ -117,7 +117,9 @@ public class TurretManualDistanceTuning extends OpMode {
         panelsTelemetry.addData("Setpoint (rads)", Utils.ras(shooter.flywheelTargetVelocityAsRadians));
         panelsTelemetry.addData("Velocity (rads)", Utils.ras(shooter.getFlywheelVelocityAsRadians()));
         panelsTelemetry.addData("Error", Math.abs(Utils.xDist(shooter.flywheelTargetVelocityAsRadians, shooter.getFlywheelVelocityAsRadians())));
+        panelsTelemetry.addLine("Command: " + CommandScheduler.getInstance().isScheduled(updateIndexerState));
         panelsTelemetry.update(telemetry);
+
         CommandScheduler.getInstance().run();
     }
 }

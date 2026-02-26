@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 @Configurable
-@TeleOp(name = "Flywheel Direction Test", group = "Testing/Composite")
+@TeleOp(name = "Flywheel Direction Test", group = "Shooter")
 public class FlywheelDirectionalTesting extends OpMode {
     double curTargetVelocityAsPercentage = 0;
     double error = 0;

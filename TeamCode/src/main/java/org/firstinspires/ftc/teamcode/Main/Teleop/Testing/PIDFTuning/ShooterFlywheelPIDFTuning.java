@@ -6,6 +6,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -24,8 +25,8 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 @Configurable
-@TeleOp(name = "Turret Flywheel PIDF Tuning", group = "Tuning")
-public class TurretFlywheelPIDFTuning extends OpMode {
+@TeleOp(name = "Turret Flywheel PIDF Tuning", group = "PID")
+public class ShooterFlywheelPIDFTuning extends OpMode {
     double curTargetVelocityAsPercentage = 0;
     double error = 0;
     double highVelocityAsPercent = 75;
@@ -77,6 +78,7 @@ public class TurretFlywheelPIDFTuning extends OpMode {
     public void start() {
         shooter.setup();
         indexer.setup();
+
         CommandScheduler.getInstance().schedule(new UpdateIndexerState(indexer,intake,shooter));
     }
 
@@ -128,7 +130,7 @@ public class TurretFlywheelPIDFTuning extends OpMode {
             curTargetVelocityAsPercentage = 0;
         }
 
-        shooter.flywheelMotorLeft.setVelocityPIDFCoefficients(P,0,0,F);
+        shooter.setVelocityPIDF(new PIDFCoefficients(P, 0, 0, F));
         shooter.setFlywheelTargetVelocityAsPercentage(curTargetVelocityAsPercentage);
 
         double curVelocityAsPercentage = shooter.getFlywheelCurrentVelocityAsPercentage();
@@ -137,9 +139,13 @@ public class TurretFlywheelPIDFTuning extends OpMode {
         panelsTelemetry.addLine("MOTM: " + MOTM);
         panelsTelemetry.addLine("");
         panelsTelemetry.addLine("Step Value: " + stepSizes[stepIndex]);
+        panelsTelemetry.addLine("");
+
         panelsTelemetry.addData("Error ", Utils.ras(Math.abs(error)));
         panelsTelemetry.addData("Setpoint ", Utils.ras(curTargetVelocityAsPercentage));
         panelsTelemetry.addData("Velocity ", Utils.ras(curVelocityAsPercentage));
+
+        panelsTelemetry.addLine("");
         panelsTelemetry.addLine("Ready?: " + shooter.isFlywheelReady());
 
         panelsTelemetry.addData("P", shooter.flywheelMotorLeft.getPIDFCoefficients

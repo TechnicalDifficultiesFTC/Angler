@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
 @Configurable
-@TeleOp(name = "Change Pose Test", group = "Testing/Composite")
+@TeleOp(name = "Change Pose Test", group = "Drivetrain")
 public class ChangePoseTest extends OpMode {
     MecanumDrivetrain mecanumDrivetrain;
     String MOTM;

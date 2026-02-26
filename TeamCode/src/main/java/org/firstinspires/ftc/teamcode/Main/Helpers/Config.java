@@ -16,6 +16,7 @@ public class Config {
         public static boolean defaultIsBlueValue = false; //For tests and stuff where we don't need to know if we're blue or not
     }
     public static class AutoPoses {
+        //Used in 3 balls
         public static Pose blueAutoStartPose = new Pose(
                 27.611,131.935,Math.toRadians(145));
         public static Pose blueAutoEndPose = new Pose(
@@ -24,6 +25,9 @@ public class Config {
 
         public static Pose redAutoStartPose = new Pose(116.743,131.472, Math.toRadians(35));
         public static Pose redAutoEndPose = new Pose(85.69774919614152, 130.14469453376208, Math.toRadians(11));
+
+        //Starting pose flush to goal and centered on shooting line
+
     }
     public static class DrivetrainConstants {
         //Before motor power is sent to the motors, they are multiplied by min/max drivetrain speed
@@ -52,8 +56,8 @@ public class Config {
         //Error margins for the "ready!" info message
         public static double FLYWHEEL_ERROR_MARGIN_RADS = .15;
         public static double MAX_ILUT_DIST = 101.5;
-        public static double MIN_ILUT_DIST = 18;
-        public static double DISTANCE_OFFSET = -26.463347; //TODO Tune me
+        public static double MIN_ILUT_DIST = 20;
+        public static double DISTANCE_OFFSET = -26.463347; //TODO Tune me from zero!!
         public static double DEGREES_PER_HOOD_TICK = 2.5;
         public static class FlywheelPIDF {
             public static double p = 185;
@@ -83,16 +87,24 @@ public class Config {
         public static int TURRET_POSITIVE_LIMIT_TICKS = Utils.turretDegreesToTicks(140); // 140 degs
         public static int TURRET_NEGATIVE_LIMIT_TICKS = -Utils.turretDegreesToTicks(220); //over -180 degs
 
-        public static class TurretPIDF {
-            public static double p = 2.05;
-            public static double d = .5;
-            public static double f = 0; //TODO tune me
+        public static class TurretPIDFLarge {
+            public static double p = 2.1;
+            public static double i = 0.005;
+            public static double d = 0.28;
+            public static double f = 2;
+        }
+
+        public static class TurretPIDFSmall {
+            public static double p = 2.1;
+            public static double i = 0.005;
+            public static double d = 0.28;
+            public static double f = 2;
         }
         public static class TurretServoDirections {
 
             public static boolean frontServoInverted = true;
             public static boolean centerServoInverted = false;
-            public static boolean rearServoInverted = true;
+            public static boolean rearServoInverted = false;
 
         }
     }
