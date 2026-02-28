@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.CompositeTesting;
 
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
+@Disabled
 @TeleOp(name = "Turret Lock On Test", group = "Turret")
 public class TurretLockOnTesting extends OpMode {
     Turret turret;
@@ -79,16 +81,16 @@ public class TurretLockOnTesting extends OpMode {
         double robotHeadingRadians = mecanumDrivetrain.getPose().getHeading();
 
         // Convert turret offset to field coordinates
-        //double turretFieldX = robotX + (turretOffsetX * Math.cos(robotHeadingRadians) -
-                //turretOffsetY * Math.sin(robotHeadingRadians));
+        double turretFieldX = robotX + (turretOffsetX * Math.cos(robotHeadingRadians) -
+                turretOffsetY * Math.sin(robotHeadingRadians));
 
-        //double turretFieldY = robotY + (turretOffsetX * Math.sin(robotHeadingRadians) +
-                //turretOffsetY * Math.cos(robotHeadingRadians));
+        double turretFieldY = robotY + (turretOffsetX * Math.sin(robotHeadingRadians) +
+                turretOffsetY * Math.cos(robotHeadingRadians));
 
 
         // Calculate angle from TURRET position to goal
-        double deltaX = goalX - robotX; //- turretFieldX;
-        double deltaY = goalY - robotY; //- turretFieldY;
+        double deltaX = goalX - turretFieldX;
+        double deltaY = goalY - turretFieldY;
 
         //telemetry.addLine("TF X/Y: " + Utils.ras(turretFieldX) + "/" + Utils.ras(turretFieldY));
         telemetry.addLine("Delta X/Y: " + Utils.ras(deltaX) + "/" + Utils.ras(deltaY));
@@ -101,10 +103,9 @@ public class TurretLockOnTesting extends OpMode {
 
         // Calculate rolling average of setpoint
         double averageTheta = calculateRollingAverage(rcTheta);
-
+        turret.realSetTurretPositionAsDegrees(averageTheta);
         //Move dt
         mecanumDrivetrain.processInputRC(gamepad1);
-        turret.realSetTurretPositionAsDegrees(averageTheta);
 
         //CommandScheduler.getInstance().run();
 

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Main.Teleop.Testing.CompositeTesting;
 
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
+@Disabled
 @TeleOp(name = "Turret Aimbot 100!", group = "Turret")
 public class TurretAimbotTesting extends OpMode {
     Turret turret;

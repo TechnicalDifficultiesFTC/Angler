@@ -27,6 +27,7 @@ public class Config {
         public static Pose redAutoEndPose = new Pose(85.69774919614152, 130.14469453376208, Math.toRadians(11));
 
         //Starting pose flush to goal and centered on shooting line
+        public static Pose defaultPoseRed = new Pose(123.010, 122.453, Math.toRadians(36));
 
     }
     public static class DrivetrainConstants {
@@ -88,17 +89,17 @@ public class Config {
         public static int TURRET_NEGATIVE_LIMIT_TICKS = -Utils.turretDegreesToTicks(220); //over -180 degs
 
         public static class TurretPIDFLarge {
-            public static double p = 2.1;
-            public static double i = 0;
-            public static double d = 0.28;
-            public static double f = 2;
+            public static double p = 1.7;
+            public static double i = 0.0;
+            public static double d = 0.3;
+            public static double f = 14.0;
         }
 
         public static class TurretPIDFSmall {
-            public static double p = 0.8;
+            public static double p = 4.0;
             public static double i = 0;
-            public static double d = 0.2;
-            public static double f = 3;
+            public static double d = 0;
+            public static double f = 16;
         }
         public static class TurretServoDirections {
 

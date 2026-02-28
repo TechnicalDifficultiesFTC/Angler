@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.Main.Commands.Turret;
 
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
+import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
@@ -23,6 +26,13 @@ public class AimTurretCommand extends CommandBase {
     double goalPositionX = 0;
     double goalPositionY = 0;
     Telemetry telemetry;
+
+    // Rolling average variables
+    double[] setPointSamples = new double[10];
+    int sampleIndex = 0;
+    boolean bufferFilled = false;
+    public double rcTheta;
+
     public AimTurretCommand(Turret turret, MecanumDrivetrain mecanumDrivetrain, Shooter shooter, Telemetry telemetry) {
         this.shooter = shooter;
         this.telemetry = telemetry;
@@ -43,53 +53,53 @@ public class AimTurretCommand extends CommandBase {
     }
 
     public void execute() {
-        Follower followerReference = mecanumDrivetrain.getFollower();
+        boolean isBlue = mecanumDrivetrain.isBlue();
+        Pose botPose = mecanumDrivetrain.getPose();
 
-        followerReference.update();
-        double distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
+        double blueGoalX = Config.FieldPositions.blueGoalX;
+        double blueGoalY = Config.FieldPositions.blueGoalY;
+        double redGoalX  = Config.FieldPositions.redGoalX;
+        double redGoalY  = Config.FieldPositions.redGoalY;
 
-        double positionX = goalPositionX - (followerReference.getPose().getX() + turretOffsetX);
-        double positionY = goalPositionY - (followerReference.getPose().getY() + turretOffsetY);
+        double goalX = isBlue ? blueGoalX : redGoalX;
+        double goalY = isBlue ? blueGoalY : redGoalY;
 
-        //Shooting on the fly stuff
-        //double velocityX = followerReference.getVelocity().getXComponent();
-        //double velocityY = followerReference.getVelocity().getYComponent();
-        //telemetry.addLine("velocityX: " + velocityX);
-        //telemetry.addLine("velocityY" + velocityY);
-        double currentShooterHoodTicks = shooter.hoodServo.getPosition();
-        double currentShooterHoodDegrees = shooter.getHoodExitDegrees(currentShooterHoodTicks);
+        double robotX = botPose.getX();
+        double robotY = botPose.getY();
 
-        //TODO make hood angle ticks to degrees conversion
-        telemetry.addLine("Hood angle: " + currentShooterHoodDegrees);
+        // Turret offset in robot frame (measure these from robot center to turret center)
+        double turretOffsetX = -2.52; //to pedro x
+        double turretOffsetY = -1.909; //to pedro y
 
-        double ballOutputWheelSpeed = shooter.getSpeedILUTValue(distance);
-        double ballVelocity = ballOutputWheelSpeed * Math.cos(currentShooterHoodDegrees);
+        double robotHeadingDegrees = Math.toDegrees(mecanumDrivetrain.getPose().getHeading());
+        double robotHeadingRadians = mecanumDrivetrain.getPose().getHeading();
 
-        telemetry.addLine("Ball vel: " + ballVelocity);
-        double ballFlightTime = distance / ballVelocity;
+        // Convert turret offset to field coordinates
+        double turretFieldX = robotX + (turretOffsetX * Math.cos(robotHeadingRadians) -
+                turretOffsetY * Math.sin(robotHeadingRadians));
 
-        telemetry.addLine("Ball flight time: " + ballFlightTime);
+        double turretFieldY = robotY + (turretOffsetX * Math.sin(robotHeadingRadians) +
+                turretOffsetY * Math.cos(robotHeadingRadians));
 
-        double targetX = (positionX / ballFlightTime);// - velocityX;
-        double targetY = (positionY / ballFlightTime);// - velocityY;
 
-        telemetry.addLine("targetX " + targetX);
-        telemetry.addLine("targetY" + targetY);
+        // Calculate angle from TURRET position to goal
+        double deltaX = goalX - turretFieldX;
+        double deltaY = goalY - turretFieldY;
 
-        double theta;
-        if (0 > targetX) {
-            theta = Math.toDegrees(Math.atan(targetY/targetX)) + 180;
-        } else {
-            theta = Math.toDegrees(Math.atan(targetY/targetX));
-        }
+        //telemetry.addLine("TF X/Y: " + Utils.ras(turretFieldX) + "/" + Utils.ras(turretFieldY));
+        //telemetry.addData("Delta X/Y: ", Utils.ras(deltaX) + "/" + Utils.ras(deltaY));
 
-        telemetry.addLine("theta" + theta);
-        //Make turret field centric
-        double robotHeading = Math.toDegrees(followerReference.getHeading());
 
-        telemetry.addLine("Robot heading " + robotHeading);
-        telemetry.addLine("Robot desired angle " +  (theta - robotHeading));
+        double fieldAngleToGoal = Math.toDegrees((Math.atan2(deltaY, deltaX))) ;
+        rcTheta = fieldAngleToGoal - robotHeadingDegrees;
 
-        //turret.setTurretPositionAsDegrees(theta - robotHeading);
+        //telemetry.addData("fieldAngleToGoal: ", Utils.ras(fieldAngleToGoal));
+
+        turret.realSetTurretPositionAsDegrees(rcTheta);
+    }
+
+    @Override
+    public boolean isFinished() { //this method will never end
+        return false;
     }
 }

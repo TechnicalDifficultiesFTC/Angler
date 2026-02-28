@@ -100,7 +100,7 @@ public class Turret extends SubsystemBase {
 
     public double runPIDFControllers(double targetDegrees) {
         final double SWITCH_THRESHOLD_HIGH = 25; // Switch to long range
-        final double SWITCH_THRESHOLD_LOW = 12;  // Switch back to short range
+        final double SWITCH_THRESHOLD_LOW = 15;  // Switch back to short range
 
         double absError = Utils.xDist(targetDegrees,getCurrentPositionAsDegrees());
 
@@ -130,7 +130,8 @@ public class Turret extends SubsystemBase {
         //tanh to smoothly scale PIDF values to (-1, 1)
         //smaller = more aggressive power
         //bigger = less aggressive power
-        power = Math.tanh(power / 125);
+        //power = Math.tanh(power / 125);
+        power = power/500;
         return power;
     }
 
@@ -147,7 +148,7 @@ public class Turret extends SubsystemBase {
         shortDistPIDF.setTargetPosition(targetDegrees);
 
         //TODO disable for tuning
-        shortDistPIDF.setCoefficients(pidfCoefficients);
+        //shortDistPIDF.setCoefficients(pidfCoefficients);
 
 //        //Change ff input based on error direction
         double error = targetDegrees - getCurrentPositionAsDegrees();
@@ -168,7 +169,7 @@ public class Turret extends SubsystemBase {
         longDistPIDF.setTargetPosition(targetDegrees);
 
         //TODO disabled for tuning
-        longDistPIDF.setCoefficients(pidfCoefficients);
+        //longDistPIDF.setCoefficients(pidfCoefficients);
 
 //        //Change ff input based on error direction
         double error = targetDegrees - getCurrentPositionAsDegrees();

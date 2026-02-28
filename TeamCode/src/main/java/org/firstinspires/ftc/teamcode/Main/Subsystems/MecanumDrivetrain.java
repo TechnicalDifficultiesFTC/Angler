@@ -64,6 +64,7 @@ public class MecanumDrivetrain extends SubsystemBase {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(initialPose);
     }
+
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
         frontLeftMotor.setZeroPowerBehavior(zeroPowerBehavior);
         backLeftMotor.setZeroPowerBehavior(zeroPowerBehavior);
@@ -82,7 +83,7 @@ public class MecanumDrivetrain extends SubsystemBase {
      * @param gamepad All input from gamepad (1)
      */
     public void processInputRC(Gamepad gamepad){
-
+        setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         runmode = "Robot-Centric";
 
         periodic();
