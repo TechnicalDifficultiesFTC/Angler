@@ -7,12 +7,13 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.PathConstraints;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
+import org.firstinspires.ftc.teamcode.Main.Helpers.Drawing;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
@@ -20,10 +21,9 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Disabled
-@Autonomous(name = "Red 3 Ball", group = "!Autonomous")
+@Autonomous(name = "Red 6 Ball Front", group = "!Autonomous")
 @Configurable // Panels
-public class RedThreeBall extends OpMode {
+public class RedSixBallFront extends OpMode {
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
     private int pathState = 0; // Current autonomous path state (state machine)
@@ -38,9 +38,11 @@ public class RedThreeBall extends OpMode {
     boolean isBlue = false;
     MecanumDrivetrain mecanumDrivetrain;
     public static Pose endPose;
+
     @Override
     public void init() {
-        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startPose, false);
+
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startPose, isBlue);
         shooter = new Shooter(hardwareMap);
         indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
@@ -51,6 +53,7 @@ public class RedThreeBall extends OpMode {
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
+        follower.setMaxPower(.75);
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -68,13 +71,14 @@ public class RedThreeBall extends OpMode {
                 Config.ShooterConstants.FLYWHEEL_SPEED_HOVERING_PERCENTAGE
         );
         intake.intakeSpinup();
+        indexer.moveArmIn();
     }
 
     @Override
     public void loop() {
         follower.update(); // Update Pedro Pathing
         autonomousPathUpdate(); // Update autonomous state machine
-
+        Drawing.drawDebug(follower);
         // Log values to Panels and Driver Station
         panelsTelemetry.debug("Path State", pathState);
         panelsTelemetry.debug("X", follower.getPose().getX());
@@ -87,21 +91,47 @@ public class RedThreeBall extends OpMode {
     }
 
 
+
+
     public static class Paths {
-        public PathChain scorePreload;
+        public PathChain Path1;
+        public PathChain Path2;
+        public PathChain Path3;
 
         public Paths(Follower follower) {
-            scorePreload = follower.pathBuilder().addPath(
+            Path1 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    Config.AutoPoses.redAutoStartPose,
+                                    new Pose(123.010, 121.990),
 
-                                    Config.AutoPoses.redAutoEndPose
+                                    new Pose(87.486, 86.469)
                             )
-                    ).setLinearHeadingInterpolation(Config.AutoPoses.redAutoStartPose.getHeading(),
-                            Config.AutoPoses.redAutoEndPose.getHeading())
+                    ).setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(36))
+
+                    .build();
+
+            Path2 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(87.486, 86.469),
+
+                                    new Pose(121.199, 84.563)
+                            )
+                    ).setTangentHeadingInterpolation()
+
+                    .build();
+
+            Path3 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(121.199, 84.563),
+
+                                    new Pose(87.772, 86.531)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(1), Math.toRadians(36))
                     .build();
         }
     }
+
+
 
     /** These change the states of the paths and actions. It will also reset the timers of the individual switches **/
     public void setPathState(int pState) {
@@ -114,23 +144,19 @@ public class RedThreeBall extends OpMode {
         // Refer to the Pedro Pathing Docs (Auto Example) for an example state machine
         switch (pathState) {
             case 0:
-                follower.followPath(paths.scorePreload);
+                follower.followPath(paths.Path1);
                 setPathState(1);
                 break;
             case 1:
                 if(!follower.isBusy()) {
-                    indexer.moveArmOut();
-                    intake.intakeSpinup();
-                    for (shotsFired = 0; shotsFired < 3; ++shotsFired) {
-                        do {
-                            Utils.halt(500);
-                        } while (shootCommandIncomplete);
-                    }
+                    follower.followPath(paths.Path2);
                     setPathState(2);
                 }
                 break;
             case 2:
-                stop();
+                if(!follower.isBusy()) {
+                    follower.followPath(paths.Path3);
+                }
         }
 
     }

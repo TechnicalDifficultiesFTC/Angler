@@ -25,10 +25,10 @@ public class Constants {
             .translationalPIDFCoefficients(new PIDFCoefficients(0.05,0,0,0.01))
             .headingPIDFCoefficients(new PIDFCoefficients(1.35,0,0.02,0.01))
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1,0.0,0.01,0.6,0.0))
-            .centripetalScaling(0.0005);
+            .centripetalScaling(0.0015);
 
     //TODO look into breaking strength error during line test
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 50, 1.5, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.95, 3, 1.5, .75);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)

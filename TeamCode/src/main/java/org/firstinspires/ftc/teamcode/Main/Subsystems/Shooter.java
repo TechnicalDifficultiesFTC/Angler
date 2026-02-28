@@ -41,9 +41,9 @@ public class Shooter extends SubsystemBase {
     public Follower follower;
     private ShooterTracker shooterTracker = new ShooterTracker();
 
-    // Constants for servo conversion
+    //Constants for servo conversion
     //max degree
-    public static final double SERVO_DEGREES_PER_UNIT = 66; // x degrees for servo value 1.0
+    public static final double SERVO_DEGREES_PER_UNIT = 65; // x degrees for servo value 1.0
     public static final double TICK_SCALE = 1000.0; // Work with values 0-1000 instead of 0-1
     public static final double SERVO_MIN_TICKS = 0;
     public static final double SERVO_MAX_TICKS = 0;
@@ -67,7 +67,23 @@ public class Shooter extends SubsystemBase {
 
     // Set hood angle using degrees
     public void setHoodAngleDegrees(double degrees) {
-        double servoValue = degrees / SERVO_DEGREES_PER_UNIT;
+        double degreesAtZero = 36.0;          // Resting angle at servo position 0
+        double ticksDeadzone = 0.09;          // Servo doesn't move hood below this value
+        double maxServoTicks = 1.0;
+        double usableRange = maxServoTicks - ticksDeadzone; // 0.91 servo units
+        double totalDegreesOfTravel = SERVO_DEGREES_PER_UNIT - degreesAtZero; // 65 - 36 = 29
+        double degreesPerTick = totalDegreesOfTravel / usableRange;
+
+        // Clamp to valid range
+        degrees = MathUtils.clamp(degrees, degreesAtZero, SERVO_DEGREES_PER_UNIT);
+
+        // Calculate servo position from degrees
+        double degreesAboveResting = degrees - degreesAtZero;
+        double servoValue = ticksDeadzone + (degreesAboveResting / degreesPerTick);
+
+        // Clamp servo value to valid range
+        servoValue = MathUtils.clamp(servoValue, 0.0, 1.0);
+
         hoodServo.setPosition(servoValue);
     }
 
@@ -89,8 +105,9 @@ public class Shooter extends SubsystemBase {
         // Calculate degrees per tick AFTER deadzone
         // If servo goes from 0.09 to 1.0 (0.91 range) and covers X degrees:
         double maxServoTicks = 1.0;
-        double usableRange = maxServoTicks - ticksDeadzone; // 0.91 servo units
-        double totalDegreesOfTravel = SERVO_DEGREES_PER_UNIT - degreesAtZero; // 189 - 36 = 153 degrees
+        double usableRange = maxServoTicks; // 0.91 servo units
+
+        double totalDegreesOfTravel = SERVO_DEGREES_PER_UNIT - degreesAtZero; // 65 - 36
 
         double degreesPerTick = totalDegreesOfTravel / usableRange;
 
@@ -146,22 +163,49 @@ public class Shooter extends SubsystemBase {
         hoodLUT = new InterpLUT();
 
         speedsLUT.add(20,80);
-        speedsLUT.add(24,75);
-        speedsLUT.add(36,80);
-        speedsLUT.add(48,85);
+        speedsLUT.add(24,80);
+        speedsLUT.add(28, 80);
+        speedsLUT.add(32, 85);
+        speedsLUT.add(36, 85);
+        speedsLUT.add(40, 85);
+        speedsLUT.add(44, 85);
+        speedsLUT.add(48, 90);
+        speedsLUT.add(52,90); //a little concerning
+        speedsLUT.add(56,90);
         speedsLUT.add(60,90);
-        speedsLUT.add(72,95);
-        speedsLUT.add(80,100);
-        speedsLUT.add(101.5,180);
+        speedsLUT.add(64,90);
+        speedsLUT.add(68,95);
+        speedsLUT.add(72, 95);
+        speedsLUT.add(76,95);
+        speedsLUT.add(107, 130);
+        speedsLUT.add(111, 130);
+        speedsLUT.add(115, 135);
+        speedsLUT.add(117,135);
+        speedsLUT.add(129,135);
 
-        hoodLUT.add(20,80);
-        hoodLUT.add(24,.15);
-        hoodLUT.add(36,.3);
-        hoodLUT.add(48,.45);
-        hoodLUT.add(60,.55);
-        hoodLUT.add(72,.55);
-        hoodLUT.add(80,.6);
-        hoodLUT.add(101.5,.6);
+        /*
+        HOOD LUT
+         */
+        hoodLUT.add(20,36);
+        hoodLUT.add(24,36.74);
+        hoodLUT.add(28, 37.85);
+        hoodLUT.add(32, 37.85);
+        hoodLUT.add(36, 40.08);
+        hoodLUT.add(40,40.08);
+        hoodLUT.add(44,41.20);
+        hoodLUT.add(48,41.20);
+        hoodLUT.add(52,41.2);
+        hoodLUT.add(56,42.31);
+        hoodLUT.add(60,42.31);
+        hoodLUT.add(64,42.31);
+        hoodLUT.add(68,42.31);
+        hoodLUT.add(72,43.43);
+        hoodLUT.add(76,44.19);
+        hoodLUT.add(107,56.81);
+        hoodLUT.add(111,57.93);
+        hoodLUT.add(115, 60.11);
+        hoodLUT.add(117, 60.11);
+        hoodLUT.add(135,57.84);
 
         //Construct ILUT's
         speedsLUT.createLUT();

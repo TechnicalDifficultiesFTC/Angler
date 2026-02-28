@@ -17,7 +17,9 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 public class FirePayload extends SequentialCommandGroup {
     Shooter shooter;
     Indexer indexer;
-    public FirePayload(Intake intake, Indexer indexer, Shooter shooter, Turret turret, MecanumDrivetrain mecanumDrivetrain) {
+    public FirePayload(Intake intake, Indexer indexer,
+                       Shooter shooter, Turret turret,
+                       MecanumDrivetrain mecanumDrivetrain) {
         this.shooter = shooter;
         this.indexer = indexer;
         addCommands(
@@ -37,11 +39,12 @@ public class FirePayload extends SequentialCommandGroup {
         super.execute();
     }
 
+    public boolean isFinished() {
+        return super.isFinished();
+    }
+
     @Override
     public void end(boolean interrupted) {
-        shooter.setFlywheelTargetVelocityAsPercentage(
-                Config.ShooterConstants.FLYWHEEL_SPEED_HOVERING_PERCENTAGE);
-        //Move indexer blocker in automatically
-        CommandScheduler.getInstance().schedule(new MoveIndexerArmInCommand(indexer));
+
     }
 }

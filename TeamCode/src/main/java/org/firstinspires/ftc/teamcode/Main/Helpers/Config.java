@@ -57,7 +57,7 @@ public class Config {
         public static double FLYWHEEL_ERROR_MARGIN_RADS = .15;
         public static double MAX_ILUT_DIST = 101.5;
         public static double MIN_ILUT_DIST = 20;
-        public static double DISTANCE_OFFSET = -26.463347; //TODO Tune me from zero!!
+        public static double DISTANCE_OFFSET = -29.765140637145116; //TODO Tune me from zero!!
         public static double DEGREES_PER_HOOD_TICK = 2.5;
         public static class FlywheelPIDF {
             public static double p = 185;
@@ -89,16 +89,16 @@ public class Config {
 
         public static class TurretPIDFLarge {
             public static double p = 2.1;
-            public static double i = 0.005;
+            public static double i = 0;
             public static double d = 0.28;
             public static double f = 2;
         }
 
         public static class TurretPIDFSmall {
-            public static double p = 2.1;
-            public static double i = 0.005;
-            public static double d = 0.28;
-            public static double f = 2;
+            public static double p = 0.8;
+            public static double i = 0;
+            public static double d = 0.2;
+            public static double f = 3;
         }
         public static class TurretServoDirections {
 

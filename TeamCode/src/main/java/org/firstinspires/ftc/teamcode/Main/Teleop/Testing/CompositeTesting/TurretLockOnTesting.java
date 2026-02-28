@@ -21,6 +21,29 @@ public class TurretLockOnTesting extends OpMode {
     AimTurretCommand aimTurretCommand;
     Shooter shooter;
     double targetDegrees = Math.toDegrees(startingPose.getHeading());
+    double rcTheta = 0;
+
+    // Rolling average variables
+    double[] setPointSamples = new double[10];
+    int sampleIndex = 0;
+    boolean bufferFilled = false;
+
+    private double calculateRollingAverage(double newSample) {
+        setPointSamples[sampleIndex] = newSample;
+        sampleIndex = (sampleIndex + 1) % setPointSamples.length;
+
+        if (sampleIndex == 0) {
+            bufferFilled = true;
+        }
+
+        int count = bufferFilled ? setPointSamples.length : sampleIndex;
+        double sum = 0;
+        for (int i = 0; i < count; i++) {
+            sum += setPointSamples[i];
+        }
+        return sum / count;
+    }
+
     @Override
     public void init() {
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap,startingPose,false);
@@ -31,36 +54,85 @@ public class TurretLockOnTesting extends OpMode {
 //      CommandScheduler.getInstance().schedule(aimTurretCommand);
     }
 
+
     @Override
     public void loop() {
-        double rcTheta = targetDegrees - Math.toDegrees(mecanumDrivetrain.getFollower().getHeading());
+        boolean isBlue = false;
+        Pose botPose = mecanumDrivetrain.getPose();
 
-        double normalizedDegrees = turret.normalizeDegrees(rcTheta);
-        double pidfvalue = turret.runPIDFController(normalizedDegrees);
+        double blueGoalX = Config.FieldPositions.blueGoalX;
+        double blueGoalY = Config.FieldPositions.blueGoalY;
+        double redGoalX  = Config.FieldPositions.redGoalX;
+        double redGoalY  = Config.FieldPositions.redGoalY;
 
-        boolean pLimBroke = turret.getCurrentPositionAsDegrees() > Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS;
-        boolean nLimBroke = turret.getCurrentPositionAsDegrees() < Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS;
+        double goalX = isBlue ? blueGoalX : redGoalX;
+        double goalY = isBlue ? blueGoalY : redGoalY;
+
+        double robotX = botPose.getX();
+        double robotY = botPose.getY();
+
+        // Turret offset in robot frame (measure these from robot center to turret center)
+        double turretOffsetX = -2.52; //to pedro x
+        double turretOffsetY = -1.909; //to pedro y
+
+        double robotHeadingDegrees = Math.toDegrees(mecanumDrivetrain.getPose().getHeading());
+        double robotHeadingRadians = mecanumDrivetrain.getPose().getHeading();
+
+        // Convert turret offset to field coordinates
+        //double turretFieldX = robotX + (turretOffsetX * Math.cos(robotHeadingRadians) -
+                //turretOffsetY * Math.sin(robotHeadingRadians));
+
+        //double turretFieldY = robotY + (turretOffsetX * Math.sin(robotHeadingRadians) +
+                //turretOffsetY * Math.cos(robotHeadingRadians));
+
+
+        // Calculate angle from TURRET position to goal
+        double deltaX = goalX - robotX; //- turretFieldX;
+        double deltaY = goalY - robotY; //- turretFieldY;
+
+        //telemetry.addLine("TF X/Y: " + Utils.ras(turretFieldX) + "/" + Utils.ras(turretFieldY));
+        telemetry.addLine("Delta X/Y: " + Utils.ras(deltaX) + "/" + Utils.ras(deltaY));
+
+
+        double fieldAngleToGoal = Math.toDegrees((Math.atan2(deltaY, deltaX))) ;
+        rcTheta = fieldAngleToGoal - robotHeadingDegrees;
+
+        telemetry.addLine("fieldAngleToGoal: " + Utils.ras(fieldAngleToGoal));
+
+        // Calculate rolling average of setpoint
+        double averageTheta = calculateRollingAverage(rcTheta);
 
         //Move dt
         mecanumDrivetrain.processInputRC(gamepad1);
-        turret.realSetTurretPositionAsDegrees(rcTheta);
+        turret.realSetTurretPositionAsDegrees(averageTheta);
 
         //CommandScheduler.getInstance().run();
 
         //log on field
         Drawing.drawDebug(mecanumDrivetrain.getFollower());
+        telemetry.addLine("Using short?: " + turret.usingShortRange);
+        telemetry.addLine("Average theta: " + averageTheta);
+        telemetry.addLine();
         telemetry.addLine("Turret ready?: " + turret.isTurretReady());
         telemetry.addLine();
-        telemetry.addLine("Target Degrees: " + targetDegrees);
+        telemetry.addLine("Target Degrees: " + Utils.ras(rcTheta));
         telemetry.addLine("Turret Angle: " + Utils.ras(turret.getCurrentPositionAsDegrees()));
-        telemetry.addLine("Turret Error: " + Utils.xDist(targetDegrees,turret.getCurrentPositionAsDegrees()));
+        telemetry.addLine("Turret Error: " + Utils.ras(Utils.xDist(rcTheta,turret.getCurrentPositionAsDegrees())));
         telemetry.addLine();
-        telemetry.addLine("Heading Degrees: " + Math.toDegrees(mecanumDrivetrain.getFollower().getHeading()));
-        telemetry.addLine("RC Theta: " + rcTheta);
+        telemetry.addLine("Heading Degrees: " + Utils.ras(robotHeadingDegrees));
         telemetry.addLine();
-        telemetry.addLine("Degrees Post Normalization: " + normalizedDegrees);
+
+        //double normalizedDegrees = turret.normalizeDegrees(rcTheta);
+        //double pidfvalue = turret.runPIDFControllers(normalizedDegrees);
+
+        boolean pLimBroke = turret.getCurrentPositionAsDegrees() > Config.TurretConstants.TURRET_POSITIVE_LIMIT_TICKS;
+        boolean nLimBroke = turret.getCurrentPositionAsDegrees() < Config.TurretConstants.TURRET_NEGATIVE_LIMIT_TICKS;
+       // telemetry.addLine("Degrees Post Normalization: " + Utils.ras(normalizedDegrees));
         telemetry.addLine("Pos/Neg Limit Broken?: " + pLimBroke + "/" + nLimBroke);
-        telemetry.addLine("PIDF Returned: " + pidfvalue);
+        //telemetry.addLine("PIDF Returned: " + Utils.ras(pidfvalue));
+        telemetry.addLine();
+        telemetry.addLine("Long:" + turret.getLongPIDFCoefficients());
+        telemetry.addLine("Short: " + turret.getShortPIDFCoefficients());
         //telemetry.addLine("Turret command: " + CommandScheduler.getInstance().isScheduled(aimTurretCommand));
         telemetry.update();
     }

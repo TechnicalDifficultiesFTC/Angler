@@ -64,7 +64,6 @@ public class MecanumDrivetrain extends SubsystemBase {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(initialPose);
     }
-
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
         frontLeftMotor.setZeroPowerBehavior(zeroPowerBehavior);
         backLeftMotor.setZeroPowerBehavior(zeroPowerBehavior);

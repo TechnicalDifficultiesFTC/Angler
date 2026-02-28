@@ -26,10 +26,17 @@ public class TurretRotationalPIDFTuning extends OpMode {
     public static double positiveTarget = bigPositiveTarget;
     public static double negativeTarget = bigNegativeTarget;
 
-    double P = Config.TurretConstants.TurretPIDFLarge.p;
-    double I = Config.TurretConstants.TurretPIDFLarge.i;
-    double D = Config.TurretConstants.TurretPIDFLarge.d;
-    double F = Config.TurretConstants.TurretPIDFLarge.f;
+    //Long
+    double pL = Config.TurretConstants.TurretPIDFLarge.p;
+    double iL = Config.TurretConstants.TurretPIDFLarge.i;
+    double dL = Config.TurretConstants.TurretPIDFLarge.d;
+    double fL = Config.TurretConstants.TurretPIDFLarge.f;
+
+    //Small
+    double pS = Config.TurretConstants.TurretPIDFSmall.p;
+    double iS = Config.TurretConstants.TurretPIDFSmall.i;
+    double dS = Config.TurretConstants.TurretPIDFSmall.d;
+    double fS = Config.TurretConstants.TurretPIDFSmall.f;
     int stepIndex;
     double[] stepSizes = {10.0, 1.0, 0.1, 0.001, 0.0001};
     String MOTM;
@@ -55,8 +62,8 @@ public class TurretRotationalPIDFTuning extends OpMode {
         options: run to zero
 
         //PIDF 1
-        dpad down: decrease P
-        dpad up: increase P
+        dpad down: decrease pL
+        dpad up: increase pL
 
         lb: increase I
         rb: decrease I
@@ -68,8 +75,8 @@ public class TurretRotationalPIDFTuning extends OpMode {
         dpad right: increase F
 
         //GP 2:
-        dpad down: decrease P
-        dpad up: increase P
+        dpad down: decrease pL
+        dpad up: increase pL
 
         lb: increase I
         rb: decrease I
@@ -89,8 +96,6 @@ public class TurretRotationalPIDFTuning extends OpMode {
             } else { positionTarget = positiveTarget; }
         }
 
-        turret.setPIDFCoeffiecients(new PIDFCoefficients(P,I,D,F));
-
         if (gamepad1.aWasPressed()) {
             //if we are on big targets
             if (positiveTarget == bigPositiveTarget) {
@@ -104,7 +109,7 @@ public class TurretRotationalPIDFTuning extends OpMode {
             }
         }
 
-        if (gamepad2.optionsWasPressed()) {
+        if (gamepad1.optionsWasPressed()) {
             positionTarget = 0;
         }
         //change step index
@@ -114,43 +119,89 @@ public class TurretRotationalPIDFTuning extends OpMode {
 
         //decrement f
         if (gamepad1.dpadLeftWasPressed()) {
-            F -= stepSizes[stepIndex];
+            fL -= stepSizes[stepIndex];
         }
 
         //increment f
         if (gamepad1.dpadRightWasPressed()) {
-            F += stepSizes[stepIndex];
+            fL += stepSizes[stepIndex];
         }
 
         //increment p
         if (gamepad1.dpadUpWasPressed()) {
-            P += stepSizes[stepIndex];
+            pL += stepSizes[stepIndex];
         }
 
         //decrement p
         if (gamepad1.dpadDownWasPressed()) {
-            P -= stepSizes[stepIndex];
+            pL -= stepSizes[stepIndex];
         }
 
         //increment d
         if (gamepad1.yWasPressed()) {
-            D += stepSizes[stepIndex];
+            dL += stepSizes[stepIndex];
         }
 
         //decrement d
         if (gamepad1.xWasPressed()) {
-            D -= stepSizes[stepIndex];
+            dL -= stepSizes[stepIndex];
         }
 
         if (gamepad1.leftBumperWasPressed()) {
-            I += stepSizes[stepIndex];
+            iL += stepSizes[stepIndex];
         }
 
         if (gamepad1.rightBumperWasPressed()) {
-            I -= stepSizes[stepIndex];
+            iL -= stepSizes[stepIndex];
+        }
+
+        /*
+        SHORT RANGE PID TUNING
+        ______________________
+         */
+
+        //decrement f
+        if (gamepad2.dpadLeftWasPressed()) {
+            fS -= stepSizes[stepIndex];
+        }
+
+        //increment f
+        if (gamepad2.dpadRightWasPressed()) {
+            fS += stepSizes[stepIndex];
+        }
+
+        //increment p
+        if (gamepad2.dpadUpWasPressed()) {
+            pS += stepSizes[stepIndex];
+        }
+
+        //decrement p
+        if (gamepad2.dpadDownWasPressed()) {
+            pS -= stepSizes[stepIndex];
+        }
+
+        //increment d
+        if (gamepad2.yWasPressed()) {
+            dS += stepSizes[stepIndex];
+        }
+
+        //decrement d
+        if (gamepad2.xWasPressed()) {
+            dS -= stepSizes[stepIndex];
+        }
+
+        if (gamepad2.leftBumperWasPressed()) {
+            iS += stepSizes[stepIndex];
+        }
+
+        if (gamepad2.rightBumperWasPressed()) {
+            iS -= stepSizes[stepIndex];
         }
 
         double actualPos = turret.getCurrentPositionAsDegrees();
+
+        turret.setLongPIDFCoeffecients(new PIDFCoefficients(pL, iL, dL, fL));
+        turret.setShortPIDFCoeffecients(new PIDFCoefficients(pS, iS, dS, fS));
 
         //set pos
         turret.tuningSetTurretPositionAsDegrees(positionTarget);
@@ -160,18 +211,29 @@ public class TurretRotationalPIDFTuning extends OpMode {
 
         panelsTelemetry.addData("Position ", Utils.ras(actualPos));
         panelsTelemetry.addData("Setpoint ", Utils.ras(positionTarget));
-        panelsTelemetry.addData("Error", Utils.ras(turret.getPIDFController().getError()));
+        panelsTelemetry.addData("Error: ", Utils.ras(Utils.xDist(positionTarget,
+                turret.getCurrentPositionAsDegrees())));
         panelsTelemetry.addLine("");
 
-        panelsTelemetry.addLine("P: " + Utils.ras(P,4));
-        panelsTelemetry.addLine("I: " + Utils.ras(I,4));
-        panelsTelemetry.addLine("D: " + Utils.ras(D,4));
-        panelsTelemetry.addLine("F: " + Utils.ras(F,4));
-        panelsTelemetry.addLine("F dir: " + (turret.getPIDFController().getTargetPosition() - turret.getCurrentPositionAsDegrees()));
+        panelsTelemetry.addLine("Using Short?: " + turret.usingShortRange);
 
+        panelsTelemetry.addLine("pL: " + Utils.ras(pL,4));
+        panelsTelemetry.addLine("iL: " + Utils.ras(iL,4));
+        panelsTelemetry.addLine("dL: " + Utils.ras(dL,4));
+        panelsTelemetry.addLine("fL: " + Utils.ras(fL,4));
         panelsTelemetry.addLine("");
-        panelsTelemetry.addLine("Current PIDF: " + turret.getPIDFCoefficients().toString());
-        panelsTelemetry.addLine("Current PIDF Power Value: " + Utils.ras(turret.runPIDFController(positionTarget),3));
+
+        panelsTelemetry.addLine("pS: " + Utils.ras(pS,4));
+        panelsTelemetry.addLine("iS: " + Utils.ras(iS,4));
+        panelsTelemetry.addLine("dS: " + Utils.ras(dS,4));
+        panelsTelemetry.addLine("fS: " + Utils.ras(fS,4));
+        panelsTelemetry.addLine("");
+
+        panelsTelemetry.addLine("Current Long PIDF: " + turret.getLongPIDFCoefficients().toString());
+        panelsTelemetry.addLine("Current Short PIDF: " + turret.getShortPIDFCoefficients().toString());
+        panelsTelemetry.addLine("");
+
+        panelsTelemetry.addLine("Current PIDF Power Value: " + Utils.ras(turret.runPIDFControllers(positionTarget),3));
         panelsTelemetry.addLine("");
 
         panelsTelemetry.addLine("Adjustment Value: " + stepSizes[stepIndex]);

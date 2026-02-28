@@ -20,7 +20,6 @@ public class TurretManualRotateTesting extends OpMode {
     public int posTarget = 0;
     public static int posFar = 1000;
     public static int posClose = -500;
-    double P = Config.TurretConstants.TurretPIDFLarge.p;
     int stepIndex;
     double[] stepSizes = {5.0, 1.0, 0.1, 0.001, 0.0001};
     double targetDegrees = 0;

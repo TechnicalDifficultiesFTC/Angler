@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 import org.firstinspires.ftc.teamcode.Main.Commands.Drivetrain.FlipDrivetrainLPM;
 import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FireOnce;
+import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FirePayload;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmOutCommand;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
@@ -46,8 +47,12 @@ public class CommandTesting extends OpMode {
     Trigger leftTrigger;
     Trigger rightTrigger;
     TelemetryManager panelsTelem;
+    Pose startingPose = new Pose(120,125,Math.toRadians(36));
+    FireOnce fireOnce;
+    FirePayload fireSalvo;
     @Override
     public void init() {
+        turret.realSetTurretPositionAsDegrees(0);
         gamepadEx = new GamepadEx(gamepad1);
         panelsTelem = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -69,7 +74,10 @@ public class CommandTesting extends OpMode {
         intake = new Intake(hardwareMap,gamepad1);
         indexer = new Indexer(hardwareMap);
         turret = new Turret(hardwareMap);
-        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap,new Pose(),true);
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startingPose,false);
+
+        fireOnce = new FireOnce(intake,indexer,shooter,turret,mecanumDrivetrain);
+        fireSalvo = new FirePayload(intake,indexer,shooter,turret,mecanumDrivetrain);
     }
 
     @Override
@@ -81,6 +89,7 @@ public class CommandTesting extends OpMode {
     }
     @Override
     public void loop() {
+        mecanumDrivetrain.processInputRC(gamepad1);
         //TODO: Test periodic intake
 //        leftTrigger
 //                .whileActiveOnce(new ForwardIntakeCommand(intake))
@@ -93,13 +102,21 @@ public class CommandTesting extends OpMode {
         dpadLeft.whenPressed(new MoveIndexerArmOutCommand(indexer));
         dpadRight.whenPressed(new MoveIndexerArmInCommand(indexer));
 
-        yButton.whenPressed(new FireOnce(intake,indexer,shooter,turret,mecanumDrivetrain));
+        bButton.whenPressed(fireSalvo);
+        yButton.whenPressed(fireOnce);
         aButton.whenPressed(new FlipDrivetrainLPM(mecanumDrivetrain));
 
         telemetry.addLine("Ball seen?: " + indexer.ballDetected());
         telemetry.addLine("Arm out?: " + indexer.isArmInTheWay());
         telemetry.addLine("Indexer motor power: " + indexer.indexerMotor.getPower());
         telemetry.addLine("Shooter ready?: " + shooter.isFlywheelReady());
+        telemetry.addLine("LPM: " + mecanumDrivetrain.isLowPowerMode());
+        telemetry.addLine("Shoot command?: " + commandSchedulerInstance.isScheduled(fireOnce));
+        telemetry.addLine();
+
+        double distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
+        telemetry.addLine("Distance: " + distance);
+        telemetry.addLine("Est Speed/Hood: " + shooter.getHoodILUTValue(distance) + "/" + shooter.getSpeedILUTValue(distance));
         panelsTelem.update(telemetry);
 
         commandSchedulerInstance.run();

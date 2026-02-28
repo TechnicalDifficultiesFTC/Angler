@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.Main.Commands.Groups;
 
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
@@ -15,6 +17,8 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Fires one ball, end condition monitors for interial drop from shooting an artifact
  */
@@ -24,6 +28,7 @@ public class FireOnce extends SequentialCommandGroup {
     Intake intake;
     ShooterTracker shooterTracker;
     boolean shotFired;
+    Timing.Timer timer;
     public FireOnce(Intake intake, Indexer indexer, Shooter shooter, Turret turret, MecanumDrivetrain mecanumDrivetrain) {
         this.shooter = shooter;
         this.indexer = indexer;
@@ -32,9 +37,9 @@ public class FireOnce extends SequentialCommandGroup {
         this.shooterTracker = shooter.getShooterTracker();
         addCommands(
                 new PrimeShooter(shooter, mecanumDrivetrain),
-                new ParallelCommandGroup(
-                    new ForwardIntakeCommand(intake),
-                    new MoveIndexerArmOutCommand(indexer)
+                new ParallelDeadlineGroup(
+                    new MoveIndexerArmOutCommand(indexer),
+                        new ForwardIntakeCommand(intake)
                 )
                 //might have to call update indexer here
         );
@@ -43,6 +48,7 @@ public class FireOnce extends SequentialCommandGroup {
     public void initialize() {
         //Start first command
         super.initialize();
+        //timer = new Timing.Timer(250, TimeUnit.MILLISECONDS);
     }
 
     public void execute() {
@@ -67,7 +73,9 @@ public class FireOnce extends SequentialCommandGroup {
 
     //End shooterTracker period
     public boolean isFinished() {
-        return shotFired;
+        //return shotFired;
+        //return timer.done();
+        return super.isFinished();
     }
 
     @Override

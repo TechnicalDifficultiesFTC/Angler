@@ -148,7 +148,7 @@ public class ShooterFlywheelPIDFTuning extends OpMode {
         panelsTelemetry.addLine("");
         panelsTelemetry.addLine("Ready?: " + shooter.isFlywheelReady());
 
-        panelsTelemetry.addData("P", shooter.flywheelMotorLeft.getPIDFCoefficients
+        panelsTelemetry.addData("pL", shooter.flywheelMotorLeft.getPIDFCoefficients
                 (DcMotor.RunMode.RUN_USING_ENCODER).p);
         panelsTelemetry.addData("F", shooter.flywheelMotorLeft.getPIDFCoefficients
                 (DcMotor.RunMode.RUN_USING_ENCODER).f);

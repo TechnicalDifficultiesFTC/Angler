@@ -43,7 +43,8 @@ public class ShooterManualDistanceCalibration extends OpMode {
         shooter = new Shooter(hardwareMap);
         indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
-        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(),true);
+        drivetrain = new MecanumDrivetrain(hardwareMap, new Pose(122.3151125401929, 123.61093247588425, Math.toRadians(36)),false);
+
         updateIndexerState = new UpdateIndexerState(indexer,intake,shooter,panelsTelemetry);
         telemetry.setMsTransmissionInterval(5);
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -106,18 +107,19 @@ public class ShooterManualDistanceCalibration extends OpMode {
         intake.processInput(gamepad1);
 
         panelsTelemetry.addLine("MOTM: " + MOTM);
-        panelsTelemetry.addLine("Hood Angle (software ticks): " + Utils.ras(shooter.hoodServo.getPosition()));
+        panelsTelemetry.addLine("Hood angle expected: " + hoodAngleDegs);
+        panelsTelemetry.addLine("Hood Angle (degrees): " + Utils.ras(shooter.getHoodExitDegrees(shooter.hoodServo.getPosition())));
         panelsTelemetry.addLine("Target percent: " + targetVelAsPercentage);
+        panelsTelemetry.addLine("Distance: " + drivetrain.getEstimatedDistanceToGoal());
         panelsTelemetry.addLine("");
         panelsTelemetry.addLine("Ready?: " + (shooter.isFlywheelReady() ? "OK" : "NO"));
         panelsTelemetry.addLine("Indexer Motor Power?: " + indexer.indexerMotor.getPower());
         panelsTelemetry.addLine("Indexer Status: " + indexer.getIndexingStatus());
-
+        panelsTelemetry.addLine("");
         panelsTelemetry.addData("Target Vel (%)", Utils.ras(shooter.getFlywheelTargetVelocityAsPercentage()));
         panelsTelemetry.addData("Setpoint (rads)", Utils.ras(shooter.flywheelTargetVelocityAsRadians));
         panelsTelemetry.addData("Velocity (rads)", Utils.ras(shooter.getFlywheelVelocityAsRadians()));
         panelsTelemetry.addData("Error", Math.abs(Utils.xDist(shooter.flywheelTargetVelocityAsRadians, shooter.getFlywheelVelocityAsRadians())));
-        panelsTelemetry.addLine("Command: " + CommandScheduler.getInstance().isScheduled(updateIndexerState));
         panelsTelemetry.update(telemetry);
 
         CommandScheduler.getInstance().run();

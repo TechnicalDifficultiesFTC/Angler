@@ -15,12 +15,14 @@ public class SpinupFlywheelCommand extends CommandBase {
         this.mecanumDrivetrain = mecanumDrivetrain;
     }
 
+    @Override
     public void initialize() {
         distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
         targetPercentage = shooter.getSpeedILUTValue(distance);
         shooter.setFlywheelTargetVelocityAsPercentage(targetPercentage);
     }
 
+    @Override
     //Continue to recalculate based on distance in case we get pushed
     public void execute() {
         distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
@@ -28,6 +30,7 @@ public class SpinupFlywheelCommand extends CommandBase {
         shooter.setFlywheelTargetVelocityAsPercentage(targetPercentage);
     }
 
+    @Override
     public boolean isFinished() {
         return shooter.isFlywheelReady();
     }
