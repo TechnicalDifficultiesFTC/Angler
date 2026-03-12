@@ -153,6 +153,8 @@ public class Shooter extends SubsystemBase {
 
     //TODO make a method that can determine if a ball has been fired by checking the inertia drop
     public void constructILUTs() {
+        double generalHoodDegsOffset = 0;
+        double generalFlywheelPowerPercentOffset = 0;
         /*
         Interpolated lookup table setup!
         All inputs are in inches
@@ -162,50 +164,50 @@ public class Shooter extends SubsystemBase {
         speedsLUT = new InterpLUT();
         hoodLUT = new InterpLUT();
 
-        speedsLUT.add(20,80);
-        speedsLUT.add(24,80);
-        speedsLUT.add(28, 80);
-        speedsLUT.add(32, 85);
-        speedsLUT.add(36, 85);
-        speedsLUT.add(40, 85);
-        speedsLUT.add(44, 85);
-        speedsLUT.add(48, 90);
-        speedsLUT.add(52,90); //a little concerning
-        speedsLUT.add(56,90);
-        speedsLUT.add(60,90);
-        speedsLUT.add(64,90);
-        speedsLUT.add(68,95);
-        speedsLUT.add(72, 95);
-        speedsLUT.add(76,95);
-        speedsLUT.add(107, 130);
-        speedsLUT.add(111, 130);
-        speedsLUT.add(115, 135);
-        speedsLUT.add(117,135);
-        speedsLUT.add(129,135);
+        speedsLUT.add(20,80 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(24,80 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(28, 80 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(32, 85 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(36, 85 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(40, 85 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(44, 85 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(48, 90 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(52,90 + generalFlywheelPowerPercentOffset); //a little concerning
+        speedsLUT.add(56,90 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(60,90 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(64,90 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(68,95 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(72, 95 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(76,95 + generalFlywheelPowerPercentOffset);
+        speedsLUT.add(107, 115);
+        speedsLUT.add(111, 115);
+        speedsLUT.add(115, 115);
+        speedsLUT.add(117,115);
+        speedsLUT.add(129,115);
 
         /*
         HOOD LUT
          */
-        hoodLUT.add(20,36);
-        hoodLUT.add(24,36.74);
-        hoodLUT.add(28, 37.85);
-        hoodLUT.add(32, 37.85);
-        hoodLUT.add(36, 40.08);
-        hoodLUT.add(40,40.08);
-        hoodLUT.add(44,41.20);
-        hoodLUT.add(48,41.20);
-        hoodLUT.add(52,41.2);
-        hoodLUT.add(56,42.31);
-        hoodLUT.add(60,42.31);
-        hoodLUT.add(64,42.31);
-        hoodLUT.add(68,42.31);
-        hoodLUT.add(72,43.43);
-        hoodLUT.add(76,44.19);
-        hoodLUT.add(107,56.81);
-        hoodLUT.add(111,57.93);
-        hoodLUT.add(115, 60.11);
-        hoodLUT.add(117, 60.11);
-        hoodLUT.add(135,57.84);
+        hoodLUT.add(20,36 + generalHoodDegsOffset);
+        hoodLUT.add(24,36.74 + generalHoodDegsOffset);
+        hoodLUT.add(28, 37.85 + generalHoodDegsOffset);
+        hoodLUT.add(32, 37.85 + generalHoodDegsOffset);
+        hoodLUT.add(36, 40.08 + generalHoodDegsOffset);
+        hoodLUT.add(40,40.08 + generalHoodDegsOffset);
+        hoodLUT.add(44,41.20 + generalHoodDegsOffset);
+        hoodLUT.add(48,41.20 + generalHoodDegsOffset);
+        hoodLUT.add(52,41.2 + generalHoodDegsOffset);
+        hoodLUT.add(56,42.31 + generalHoodDegsOffset);
+        hoodLUT.add(60,42.31 + generalHoodDegsOffset);
+        hoodLUT.add(64,42.31 + generalHoodDegsOffset);
+        hoodLUT.add(68,42.31 + generalHoodDegsOffset);
+        hoodLUT.add(72,43.43 + generalHoodDegsOffset);
+        hoodLUT.add(76,44.19 + generalHoodDegsOffset);
+        hoodLUT.add(107,56.81 + generalHoodDegsOffset);
+        hoodLUT.add(111,63);
+        hoodLUT.add(115, 64);
+        hoodLUT.add(117, 64);
+        hoodLUT.add(135,64);
 
         //Construct ILUT's
         speedsLUT.createLUT();

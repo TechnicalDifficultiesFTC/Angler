@@ -15,6 +15,9 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.Main.Auto.Blue.BlueSixBallBack;
 import org.firstinspires.ftc.teamcode.Main.Auto.Blue.BlueSixBallFront;
+import org.firstinspires.ftc.teamcode.Main.Auto.Blue.BlueThreeBallBack;
+import org.firstinspires.ftc.teamcode.Main.Auto.Chronobreak.ChronoBLUESixBallFront;
+import org.firstinspires.ftc.teamcode.Main.Auto.Chronobreak.ChronoREDSixBallFront;
 import org.firstinspires.ftc.teamcode.Main.Auto.Red.RedSixBallBack;
 import org.firstinspires.ftc.teamcode.Main.Auto.Red.RedSixBallFront;
 import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FireOnce;
@@ -72,6 +75,8 @@ public class BlueMav extends OpMode {
 
     @Override
     public void init() {
+        CommandScheduler.getInstance().reset();
+
         MOTM = Utils.generateMOTM();
 
         // Check if an auto was just run and use its end pose
@@ -84,6 +89,14 @@ public class BlueMav extends OpMode {
         } else if (BlueSixBallFront.endPose != null) {
             autoPose = BlueSixBallFront.endPose;
             BlueSixBallFront.endPose = null; // clear it
+
+        } else if (BlueThreeBallBack.endPose != null) {
+            autoPose = BlueThreeBallBack.endPose;
+            BlueThreeBallBack.endPose = null;
+
+        } else if (ChronoBLUESixBallFront.endPose != null) {
+            autoPose = ChronoBLUESixBallFront.endPose;
+            ChronoBLUESixBallFront.endPose = null;
         }
 
         if (autoPose == null) {
@@ -115,8 +128,8 @@ public class BlueMav extends OpMode {
 
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, autoPose,isBlue);
 
-        fireOnce = new FireOnce(intake,indexer,shooter,turret,mecanumDrivetrain);
-        fireSalvo = new FirePayload(intake,indexer,shooter,turret,mecanumDrivetrain);
+        fireOnce = new FireOnce(intake,indexer,shooter, turret, mecanumDrivetrain);
+        fireSalvo = new FirePayload(intake,indexer,shooter, turret, mecanumDrivetrain);
         aimTurretCommand = new AimTurretCommand(turret, mecanumDrivetrain, shooter, telemetry);
         updateIndexerState = new UpdateIndexerState(indexer,intake,shooter,panelsTelem);
 
@@ -141,9 +154,9 @@ public class BlueMav extends OpMode {
     public void start() {
         shooter.setup();
         indexer.setup();
+        shooter.setFlywheelTargetVelocityAsPercentage(30);
         //This command will never terminate
         commandSchedulerInstance.schedule(updateIndexerState);
-        commandSchedulerInstance.schedule(aimTurretCommand);
     }
 
     boolean tuneLong = false;
@@ -162,24 +175,26 @@ public class BlueMav extends OpMode {
 
         //MAV Controls:
 
+        //Cancel turret
         if (gamepad2.aWasPressed()) {
             CommandScheduler.getInstance().cancel(aimTurretCommand);
             turret.realSetTurretPositionAsDegrees(0);
         }
 
+        //Re localize
         if (gamepad2.bWasPressed()) {
             mecanumDrivetrain.getFollower().setPose(startingPose);
         }
 
         telemetry.addLine(MOTM);
         telemetry.addLine();
+        telemetry.addLine("LPM?: " + mecanumDrivetrain.isLowPowerMode());
         telemetry.addLine("Pose: " + mecanumDrivetrain.getPose().toString());
         telemetry.addLine();
         telemetry.addLine("Error: " + Utils.ras((aimTurretCommand.rcTheta - turret.getCurrentPositionAsDegrees())));
         telemetry.addLine("RC Theta: " + Utils.ras(aimTurretCommand.rcTheta));
         telemetry.addLine("Turret Active?: " + CommandScheduler.getInstance().isScheduled(aimTurretCommand));
         telemetry.addLine();
-
         double distance = mecanumDrivetrain.getEstimatedDistanceToGoal();
         telemetry.addLine("Distance: " + distance);
         telemetry.addLine("Speed/Hood: " + Utils.ras(shooter.getHoodILUTValue(distance)) + "/" + Utils.ras(shooter.getSpeedILUTValue(distance)));

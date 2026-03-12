@@ -64,9 +64,12 @@ public class OnTheMovePIDTuning extends OpMode {
 
     int stepIndex;
     double[] stepSizes = {10.0, 1.0, 0.1, 0.001, 0.0001};
+    UpdateIndexerState updateIndexerState;
 
     @Override
     public void init() {
+        CommandScheduler.getInstance().reset();
+
         gamepadEx = new GamepadEx(gamepad1);
         panelsTelem = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -90,9 +93,10 @@ public class OnTheMovePIDTuning extends OpMode {
         turret = new Turret(hardwareMap);
         mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, startingPose,false);
 
-        fireOnce = new FireOnce(intake,indexer,shooter,turret,mecanumDrivetrain);
-        fireSalvo = new FirePayload(intake,indexer,shooter,turret,mecanumDrivetrain);
+        fireOnce = new FireOnce(intake,indexer,shooter, turret, mecanumDrivetrain);
+        fireSalvo = new FirePayload(intake,indexer,shooter, turret, mecanumDrivetrain);
         aimTurretCommand = new AimTurretCommand(turret, mecanumDrivetrain, shooter, telemetry);
+        updateIndexerState = new UpdateIndexerState(indexer,intake,shooter,panelsTelem);
     }
 
     @Override
@@ -100,7 +104,7 @@ public class OnTheMovePIDTuning extends OpMode {
         shooter.setup();
         indexer.setup();
         //This command will never terminate
-        commandSchedulerInstance.schedule(new UpdateIndexerState(indexer,intake,shooter,panelsTelem));
+        commandSchedulerInstance.schedule(updateIndexerState);
         commandSchedulerInstance.schedule(aimTurretCommand);
     }
     boolean tuneLong = false;
@@ -121,6 +125,7 @@ public class OnTheMovePIDTuning extends OpMode {
 
         bButton.whenPressed(fireSalvo);
         yButton.whenPressed(fireOnce);
+
         aButton.whenPressed(new FlipDrivetrainLPM(mecanumDrivetrain));
 
         double normalized = turret.normalizeDegrees(aimTurretCommand.rcTheta);
@@ -129,15 +134,20 @@ public class OnTheMovePIDTuning extends OpMode {
         telemetry.addLine("Error: " + Utils.ras((aimTurretCommand.rcTheta - turret.getCurrentPositionAsDegrees())));
         telemetry.addLine("RC Theta: " + Utils.ras(aimTurretCommand.rcTheta));
         telemetry.addLine("");
+        telemetry.addLine("Indexer feedback: " + indexer.indexerMotor.getPower() );
+        telemetry.addLine("Indexing command: " + updateIndexerState.isFinished());
 
         telemetry.addLine("Normalize Degrees: " + Utils.ras(normalized));
         telemetry.addLine("PIDF: " + Utils.ras(turret.runPIDFControllers(normalized)));
 
         telemetry.addLine("");
         telemetry.addLine("Indexer motor power: " + indexer.indexerMotor.getPower());
-        telemetry.addLine("Shooter ready?: " + shooter.isFlywheelReady());
         telemetry.addLine("LPM: " + mecanumDrivetrain.isLowPowerMode());
+        telemetry.addLine();
+        telemetry.addLine("Shooter ready?: " + shooter.isFlywheelReady());
+        telemetry.addLine("Turret ready?: " + turret.isTurretReady());
         telemetry.addLine("Shoot command?: " + commandSchedulerInstance.isScheduled(fireOnce));
+        telemetry.addLine("Salvo command?: " + commandSchedulerInstance.isScheduled(fireSalvo));
         telemetry.addLine();
         //telemetry.addLine("pS: " + )
 

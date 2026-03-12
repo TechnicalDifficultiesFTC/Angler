@@ -27,7 +27,7 @@ public class MoveIndexerArmOutCommand extends CommandBase {
     }
 
     public boolean isFinished () {
-        return timer.done();
+        return true;
     }
 
 }

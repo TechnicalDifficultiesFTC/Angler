@@ -10,19 +10,25 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.util.Timing;
 
+import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FireOnce;
+import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FirePayload;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
+import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Drawing;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Red 6 Ball Back", group = "!Autonomous")
+@Autonomous(name = "Red 6 Ball Back", group = "!Red Autonomous")
 @Configurable // Panels
 public class RedSixBallBack extends OpMode {
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
@@ -38,8 +44,12 @@ public class RedSixBallBack extends OpMode {
     private int shotsFired = 0;
     boolean isBlue = false;
     MecanumDrivetrain mecanumDrivetrain;
+    Turret turret;
     public static Pose endPose;
     public Timing.Timer firstTimer;
+
+    FirePayload firstSalvo;
+    FirePayload secondSalvo;
 
     @Override
     public void init() {
@@ -48,6 +58,7 @@ public class RedSixBallBack extends OpMode {
         shooter = new Shooter(hardwareMap);
         indexer = new Indexer(hardwareMap);
         intake = new Intake(hardwareMap);
+        turret = new Turret(hardwareMap);
 
         pathTimer = new Timer();
         opmodeTimer = new Timer();
@@ -63,15 +74,19 @@ public class RedSixBallBack extends OpMode {
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
+
+        firstSalvo = new FirePayload(intake,indexer,shooter, turret, mecanumDrivetrain);
+        secondSalvo = new FirePayload(intake,indexer,shooter, turret, mecanumDrivetrain);
     }
 
     @Override
     public void start() {
         shooter.setup();
         indexer.setup();
-        shooter.setFlywheelTargetVelocityAsPercentage(
-                Config.ShooterConstants.FLYWHEEL_SPEED_HOVERING_PERCENTAGE
-        );
+
+        shooter.setFlywheelTargetVelocityAsPercentage(160);
+        CommandScheduler.getInstance().schedule(new UpdateIndexerState(indexer,intake,shooter));
+
         intake.intakeSpinup();
         indexer.moveArmIn();
     }
@@ -92,7 +107,10 @@ public class RedSixBallBack extends OpMode {
         panelsTelemetry.debug("Shots Fired: " + shotsFired);
         panelsTelemetry.debug("Shooter rec power?: " + shooter.getSpeedILUTValue(mecanumDrivetrain.getEstimatedDistanceToGoal()));
         panelsTelemetry.update(telemetry);
+
+        CommandScheduler.getInstance().run();
     }
+
 
 
     public static class Paths {
@@ -101,15 +119,16 @@ public class RedSixBallBack extends OpMode {
         public PathChain Path3;
         public PathChain Path4;
         public PathChain Path5;
+        public PathChain Path6;
 
         public Paths(Follower follower) {
             Path1 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(86.559, 10.084),
+                                    new Pose(87.023, 8.695),
 
                                     new Pose(87.023, 13.543)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(60))
+                    ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(68))
 
                     .build();
 
@@ -117,7 +136,7 @@ public class RedSixBallBack extends OpMode {
                             new BezierLine(
                                     new Pose(87.023, 13.543),
 
-                                    new Pose(90.058, 49.543)
+                                    new Pose(91.910, 35.653)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(0))
 
@@ -125,9 +144,9 @@ public class RedSixBallBack extends OpMode {
 
             Path3 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(90.058, 49.543),
+                                    new Pose(91.910, 35.653),
 
-                                    new Pose(128.601, 49.875)
+                                    new Pose(130.222, 36.447)
                             )
                     ).setTangentHeadingInterpolation()
 
@@ -135,7 +154,7 @@ public class RedSixBallBack extends OpMode {
 
             Path4 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(128.601, 49.875),
+                                    new Pose(130.222, 36.447),
 
                                     new Pose(89.148, 35.826)
                             )
@@ -149,11 +168,22 @@ public class RedSixBallBack extends OpMode {
 
                                     new Pose(86.759, 15.064)
                             )
-                    ).setConstantHeadingInterpolation(Math.toRadians(60))
+                    ).setConstantHeadingInterpolation(Math.toRadians(68))
+
+                    .build();
+
+            Path6 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(86.759, 15.064),
+
+                                    new Pose(111.167, 14.103)
+                            )
+                    ).setTangentHeadingInterpolation()
 
                     .build();
         }
     }
+
 
     /** These change the states of the paths and actions. It will also reset the timers of the individual switches **/
     public void setPathState(int pState) {
@@ -161,48 +191,55 @@ public class RedSixBallBack extends OpMode {
         pathTimer.resetTimer();
     }
     public void autonomousPathUpdate() {
-        // Add your state machine Here
-        // Access paths with paths.pathName
-        // Refer to the Pedro Pathing Docs (Auto Example) for an example state machine
         switch (pathState) {
             case 0:
                 follower.followPath(paths.Path1);
                 setPathState(1);
                 break;
             case 1:
-                if(!follower.isBusy()) {
-                    // Path2 just finished — start timer and hold position
-                    firstTimer = new Timing.Timer(2000, TimeUnit.MILLISECONDS);
-                    firstTimer.start();
-                    follower.holdPoint(new Pose(87.023, 13.543,Math.toRadians(60)));
+                if (!follower.isBusy()) {
+                    CommandScheduler.getInstance().schedule(firstSalvo);
                     setPathState(2);
                 }
                 break;
             case 2:
-                if(firstTimer.done()) {
+                // Wait until firstSalvo has finished (no longer scheduled)
+                if (!follower.isBusy() && !CommandScheduler.getInstance().isScheduled(firstSalvo)) {
+                    CommandScheduler.getInstance().schedule(new MoveIndexerArmInCommand(indexer));
                     follower.followPath(paths.Path2);
                     setPathState(3);
                 }
                 break;
             case 3:
-                if(!follower.isBusy()) {
+                if (!follower.isBusy()) {
                     follower.followPath(paths.Path3);
                     setPathState(4);
                 }
                 break;
             case 4:
-                if(!follower.isBusy()) {
+                if (!follower.isBusy()) {
                     follower.followPath(paths.Path4);
                     setPathState(5);
                 }
                 break;
             case 5:
-                if(!follower.isBusy()) {
+                if (!follower.isBusy()) {
                     follower.followPath(paths.Path5);
                     setPathState(6);
                 }
                 break;
+            case 6:
+                if (!follower.isBusy()) {
+                    CommandScheduler.getInstance().schedule(secondSalvo);
+                    setPathState(7);
+                }
+                break; // <-- was missing
+            case 7:
+                if (!follower.isBusy() && !CommandScheduler.getInstance().isScheduled(secondSalvo)) {
+                    shooter.setFlywheelTargetVelocityAsPercentage(0);
+                }
+                break;
         }
-
     }
+
 }

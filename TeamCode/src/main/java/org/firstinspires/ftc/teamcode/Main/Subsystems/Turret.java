@@ -10,12 +10,12 @@ import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoGroup;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.DeviceRegistry;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Utils;
 
 public class Turret extends SubsystemBase {
+    double targetDegs = 0;
     static class IsolatedThroughBoreEncoder {
         DcMotorEx encoderMotor;
         Motor.Direction encoderDirection = Motor.Direction.REVERSE;
@@ -35,7 +35,7 @@ public class Turret extends SubsystemBase {
     CRServoEx frontServo;
     CRServoEx centerServo;
     CRServoEx rearServo;
-    CRServoGroup servoGroup;
+    public CRServoGroup servoGroup;
     IsolatedThroughBoreEncoder encoder;
     PIDFController longDistPIDF;
     PIDFController shortDistPIDF;
@@ -71,9 +71,9 @@ public class Turret extends SubsystemBase {
     }
 
     public boolean isTurretReady() {
-        double pos = encoder.getCurrentPosition();
-        double targetPos = longDistPIDF.getTargetPosition();
-        return Utils.xDist(pos, targetPos) <= Config.TurretConstants.TURRET_ERROR_MARGIN_TICKS;
+        double pos = getCurrentPositionAsDegrees();
+        double targetPos = targetDegs;
+        return Utils.xDist(pos, targetPos) <= Config.TurretConstants.TURRET_ERROR_MARGIN_DEGS;
     }
 
     public double getCurrentPositionAsDegrees() {
@@ -93,6 +93,7 @@ public class Turret extends SubsystemBase {
      */
     public void realSetTurretPositionAsDegrees(double targetDegrees) {
         //Add degrees wrapping here
+        targetDegs = targetDegrees;
         targetDegrees = normalizeDegrees(targetDegrees);
         double power = runPIDFControllers(targetDegrees);
         servoGroup.set(-power);
@@ -102,7 +103,7 @@ public class Turret extends SubsystemBase {
         final double SWITCH_THRESHOLD_HIGH = 25; // Switch to long range
         final double SWITCH_THRESHOLD_LOW = 15;  // Switch back to short range
 
-        double absError = Utils.xDist(targetDegrees,getCurrentPositionAsDegrees());
+        double absError = Utils.xDist(targetDegrees, getCurrentPositionAsDegrees());
 
 //        if (absError < 2) { //Tolerance of +- 2 degrees
 //            return 0;

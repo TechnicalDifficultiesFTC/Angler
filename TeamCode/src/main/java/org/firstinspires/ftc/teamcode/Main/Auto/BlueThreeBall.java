@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Main.Auto;
 import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.bylazar.configurables.annotations.Configurable;
@@ -22,6 +23,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 
+@Disabled
 @Autonomous(name = "Blue 3 Ball", group = "!Autonomous")
 @Configurable // Panels
 public class BlueThreeBall extends OpMode {

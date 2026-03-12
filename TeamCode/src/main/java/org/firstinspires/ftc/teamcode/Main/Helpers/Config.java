@@ -81,18 +81,19 @@ public class Config {
     }
     @Configurable
     public static class TurretConstants {
-        public static double TURRET_ERROR_MARGIN_TICKS = 75;
+        public static double TURRET_ERROR_MARGIN_DEGS = 4;
 
         //Turret limits
         public static double TICKSPERDEG = (double) 12284/90;
         public static int TURRET_POSITIVE_LIMIT_TICKS = Utils.turretDegreesToTicks(140); // 140 degs
         public static int TURRET_NEGATIVE_LIMIT_TICKS = -Utils.turretDegreesToTicks(220); //over -180 degs
 
+        //TODO these are set to 0 for the PIDF demonstration
         public static class TurretPIDFLarge {
-            public static double p = 1.7;
+            public static double p = 0.0;
             public static double i = 0.0;
-            public static double d = 0.3;
-            public static double f = 14.0;
+            public static double d = 0.0;
+            public static double f = 0.0;
         }
 
         public static class TurretPIDFSmall {
@@ -112,8 +113,8 @@ public class Config {
 
     public static class IndexerConstants {
         //These are positions to go to represented by servo ticks (0,1)
-        public static double SERVO_INCISION_TICKS = .75;
-        public static double SERVO_EXPANSION_TICKS = .63;
+        public static double SERVO_INCISION_TICKS = .675;
+        public static double SERVO_EXPANSION_TICKS = .545;
         public static double DISTANCE_SENSOR_BALL_HELD_THRESHOLD_INCHES = 2;
         //The amount of time indexer arm commands will wait for before terminating
         public static long TRANSITION_TIME_MILLISECONDS = 75;

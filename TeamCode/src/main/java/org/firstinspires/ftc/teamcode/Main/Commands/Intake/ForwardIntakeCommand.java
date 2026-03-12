@@ -22,7 +22,6 @@ public class ForwardIntakeCommand extends CommandBase {
     }
 
     public boolean isFinished() {
-        //yield to intake reversal
         return false;
     }
 }

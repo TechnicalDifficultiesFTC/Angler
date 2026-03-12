@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 
-@Disabled
+
 @Configurable
 @TeleOp(name="Ball Held Test", group="Indexer/Intake")
 public class BallHeldTest extends OpMode {

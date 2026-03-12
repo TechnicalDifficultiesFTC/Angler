@@ -14,8 +14,10 @@ import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
+import org.firstinspires.ftc.teamcode.Main.Auto.Chronobreak.ChronoREDSixBallFront;
 import org.firstinspires.ftc.teamcode.Main.Auto.Red.RedSixBallBack;
 import org.firstinspires.ftc.teamcode.Main.Auto.Red.RedSixBallFront;
+import org.firstinspires.ftc.teamcode.Main.Auto.Red.RedThreeBallBack;
 import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FireOnce;
 import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FirePayload;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
@@ -68,9 +70,13 @@ public class RedMav extends OpMode {
     //TODO Check me
     boolean isBlue = false;
     UpdateIndexerState updateIndexerState;
+    boolean usingTurret = false;
 
     @Override
     public void init() {
+        CommandScheduler.getInstance().reset();
+
+
         MOTM = Utils.generateMOTM();
 
         // Check if an auto was just run and use its end pose
@@ -83,6 +89,12 @@ public class RedMav extends OpMode {
         } else if (RedSixBallBack.endPose != null) {
             autoPose = RedSixBallBack.endPose;
             RedSixBallBack.endPose = null; // clear it
+        } else if (RedThreeBallBack.endPose != null) {
+            autoPose = RedThreeBallBack.endPose;
+            RedThreeBallBack.endPose = null;
+        } else if (ChronoREDSixBallFront.endPose != null) {
+            autoPose = ChronoREDSixBallFront.endPose;
+            ChronoREDSixBallFront.endPose = null;
         }
 
         if (autoPose == null) {
@@ -112,10 +124,10 @@ public class RedMav extends OpMode {
         indexer = new Indexer(hardwareMap);
         turret = new Turret(hardwareMap);
 
-        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, autoPose,isBlue);
+        mecanumDrivetrain = new MecanumDrivetrain(hardwareMap, autoPose, isBlue);
 
-        fireOnce = new FireOnce(intake,indexer,shooter,turret,mecanumDrivetrain);
-        fireSalvo = new FirePayload(intake,indexer,shooter,turret,mecanumDrivetrain);
+        fireOnce = new FireOnce(intake,indexer,shooter, turret, mecanumDrivetrain);
+        fireSalvo = new FirePayload(intake,indexer,shooter, turret, mecanumDrivetrain);
         aimTurretCommand = new AimTurretCommand(turret, mecanumDrivetrain, shooter, telemetry);
         updateIndexerState = new UpdateIndexerState(indexer,intake,shooter,panelsTelem);
 
@@ -140,9 +152,12 @@ public class RedMav extends OpMode {
     public void start() {
         shooter.setup();
         indexer.setup();
+        shooter.setFlywheelTargetVelocityAsPercentage(30); //resting percent at start to prevent jams
         //This command will never terminate
         commandSchedulerInstance.schedule(updateIndexerState);
-        commandSchedulerInstance.schedule(aimTurretCommand);
+        if (usingTurret) {
+            commandSchedulerInstance.schedule(aimTurretCommand);
+        }
     }
 
     boolean tuneLong = false;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Main.Auto.Blue;
+package org.firstinspires.ftc.teamcode.Main.Auto.Chronobreak;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -11,11 +11,11 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.util.Timing;
 
 import org.firstinspires.ftc.teamcode.Main.Commands.Groups.FirePayload;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.MoveIndexerArmInCommand;
 import org.firstinspires.ftc.teamcode.Main.Commands.Indexer.UpdateIndexerState;
+import org.firstinspires.ftc.teamcode.Main.Commands.Intake.StopIntakeCommand;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Config;
 import org.firstinspires.ftc.teamcode.Main.Helpers.Drawing;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Indexer;
@@ -25,29 +25,25 @@ import org.firstinspires.ftc.teamcode.Main.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Main.Subsystems.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-import java.util.concurrent.TimeUnit;
-
-@Autonomous(name = "Blue 6 Ball Back", group = "!Blue Autonomous")
+@Autonomous(name = "Chronobreak RED 3 Ball Front", group = "!Red Autonomous")
 @Configurable // Panels
-public class BlueSixBallBack extends OpMode {
-    private TelemetryManager panelsTelemetry;
-    public Follower follower;
-    private int pathState = 0;
-    private Paths paths;
+public class ChronoREDSixBallFront extends OpMode {
+    private TelemetryManager panelsTelemetry; // Panels Telemetry instance
+    public Follower follower; // Pedro Pathing follower instance
+    private int pathState = 0; // Current autonomous path state (state machine)
+    private Paths paths; // Paths defined in the Paths class
     private Timer pathTimer, actionTimer, opmodeTimer;
-    private final Pose startPose = new Pose(87.486, 8.695, Math.toRadians(90)).mirror();
+    private static final Pose startPose = new Pose(123.010, 122.453, Math.toRadians(36));
     private Shooter shooter;
     private Indexer indexer;
     private Intake intake;
     private boolean shootCommandIncomplete;
     private int shotsFired = 0;
-    boolean isBlue = true;
+    boolean isBlue = false;
     MecanumDrivetrain mecanumDrivetrain;
-    public static Pose endPose;
-    public Timing.Timer firstTimer;
-    FirePayload firstSalvo;
-    FirePayload secondSalvo;
     Turret turret;
+    public static Pose endPose;
+    FirePayload firstSalvo;
 
     @Override
     public void init() {
@@ -63,25 +59,27 @@ public class BlueSixBallBack extends OpMode {
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
-        follower.setMaxPower(.5);
+        follower.setMaxPower(.75);
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-        paths = new Paths(follower);
+
+        paths = new Paths(follower); // Build paths
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
 
         firstSalvo = new FirePayload(intake,indexer,shooter, turret, mecanumDrivetrain);
-        secondSalvo = new FirePayload(intake,indexer,shooter, turret, mecanumDrivetrain);
     }
 
     @Override
     public void start() {
         shooter.setup();
         indexer.setup();
+
         shooter.setFlywheelTargetVelocityAsPercentage(
                 Config.ShooterConstants.FLYWHEEL_SPEED_HOVERING_PERCENTAGE
         );
+
         intake.intakeSpinup();
         indexer.moveArmIn();
     }
@@ -90,9 +88,10 @@ public class BlueSixBallBack extends OpMode {
     public void loop() {
         endPose = follower.getPose();
 
-        follower.update();
-        autonomousPathUpdate();
+        follower.update(); // Update Pedro Pathing
+        autonomousPathUpdate(); // Update autonomous state machine
         Drawing.drawDebug(follower);
+        // Log values to Panels and Driver Station
         panelsTelemetry.debug("Path State", pathState);
         panelsTelemetry.debug("X", follower.getPose().getX());
         panelsTelemetry.debug("Y", follower.getPose().getY());
@@ -101,7 +100,10 @@ public class BlueSixBallBack extends OpMode {
         panelsTelemetry.debug("Shots Fired: " + shotsFired);
         panelsTelemetry.debug("Shooter rec power?: " + shooter.getSpeedILUTValue(mecanumDrivetrain.getEstimatedDistanceToGoal()));
         panelsTelemetry.update(telemetry);
+
+        CommandScheduler.getInstance().run();
     }
+
 
     public static class Paths {
         public PathChain Path1;
@@ -141,7 +143,7 @@ public class BlueSixBallBack extends OpMode {
 
             Path4 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(87.772, 86.531),
+                                    new Pose(87.486, 86.469),
 
                                     new Pose(87.534, 118.283)
                             )
@@ -151,11 +153,12 @@ public class BlueSixBallBack extends OpMode {
         }
     }
 
+
+    /** These change the states of the paths and actions. It will also reset the timers of the individual switches **/
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
     }
-
     public void autonomousPathUpdate() {
         // Add your state machine Here
         // Access paths with paths.pathName
@@ -169,31 +172,31 @@ public class BlueSixBallBack extends OpMode {
             case 1: //at the end of path 1 shoot salvo
                 if (!follower.isBusy()) {
                     CommandScheduler.getInstance().schedule(firstSalvo);
-                    CommandScheduler.getInstance().schedule(new UpdateIndexerState(indexer, intake, shooter));
+                    CommandScheduler.getInstance().schedule(new UpdateIndexerState(indexer,intake,shooter));
                     setPathState(2);
                 }
                 break;
             case 2:
-                if (!follower.isBusy() && firstSalvo.isFinished()) {
+                if(!follower.isBusy() && firstSalvo.isFinished()) {
                     CommandScheduler.getInstance().schedule(new MoveIndexerArmInCommand(indexer));
-                    follower.followPath(paths.Path2);
-                    setPathState(3);
-                }
-                break;
-            case 3:
-                if (!follower.isBusy()) {
-                    follower.followPath(paths.Path3);
-                    setPathState(4);
-                }
-                break;
-            case 4:
-                if (!follower.isBusy()) {
-                    CommandScheduler.getInstance().schedule(secondSalvo);
                     setPathState(5);
                 }
                 break;
+//            case 3:
+//                if(!follower.isBusy()) {
+//                    follower.followPath(paths.Path3);
+//                    setPathState(4);
+//                }
+//                break;
+//            case 4:
+//                if(!follower.isBusy()) {
+//                    CommandScheduler.getInstance().schedule(secondSalvo);
+//                    setPathState(5);
+//                }
+//                break;
             case 5:
-                if (!follower.isBusy() && !CommandScheduler.getInstance().isScheduled(secondSalvo)) {
+                if (!follower.isBusy()) {
+                    CommandScheduler.getInstance().schedule(new StopIntakeCommand(intake));
                     shooter.setFlywheelTargetVelocityAsPercentage(0);
                     setPathState(6);
                 }
@@ -204,5 +207,7 @@ public class BlueSixBallBack extends OpMode {
                 }
                 //do nothing
         }
+
     }
 }
+    
